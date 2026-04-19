@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.thunder"
-version = "0.0.0"
+version = "0.1.0"
 
 android {
     namespace = "io.thunder.android"
@@ -42,7 +42,7 @@ publishing {
         create<MavenPublication>("release") {
             groupId = "io.thunder"
             artifactId = "android"
-            version = "0.0.0"
+            version = "0.1.0"
             afterEvaluate {
                 from(components["release"])
             }
@@ -56,6 +56,19 @@ publishing {
                         url.set("https://www.apache.org/licenses/LICENSE-2.0")
                     }
                 }
+            }
+        }
+    }
+}
+
+publishing {
+    repositories {
+        maven {
+            name = "GitHubPackages"
+            url = uri("https://maven.pkg.github.com/brionmario/thunder-sdks")
+            credentials {
+                username = System.getenv("GITHUB_ACTOR") ?: ""
+                password = System.getenv("GITHUB_TOKEN") ?: ""
             }
         }
     }
