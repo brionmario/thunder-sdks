@@ -25,7 +25,7 @@ internal class FlowExecutionClient(private val httpClient: HttpClient) {
         return httpClient.post("/flow/execute", body, requiresAuth = false)
     }
 
-    internal fun submitBody(flowId: String, actionId: String): Map<String, String> = mapOf(
+    internal fun submitBody(flowId: String, actionId: String): Map<String, Any> = mapOf(
         "flowId" to flowId,
         "action" to actionId
     )
