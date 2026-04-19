@@ -5,7 +5,7 @@ plugins {
 }
 
 group = "io.thunder"
-version = "0.1.0"
+version = "0.0.0"
 
 android {
     namespace = "io.thunder.android"
@@ -41,7 +41,7 @@ publishing {
         create<MavenPublication>("release") {
             groupId = "io.thunder"
             artifactId = "android"
-            version = "0.1.0"
+            version = "0.0.0"
             afterEvaluate {
                 from(components["release"])
             }
