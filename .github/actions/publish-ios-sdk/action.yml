@@ -1,5 +1,5 @@
 name: 'Publish iOS SDK'
-description: 'Builds and releases the Thunder iOS SDK as a tagged GitHub Release under the experimental namespace'
+description: 'Builds and releases the Thunder iOS SDK as a tagged GitHub Release'
 
 inputs:
   version:
@@ -25,7 +25,7 @@ runs:
     - name: 🏷️ Create and push tag
       shell: bash
       run: |
-        TAG="sdk/ios-experimental/v${{ inputs.version }}"
+        TAG="sdk/ios/v${{ inputs.version }}"
         git tag "$TAG"
         git push origin "$TAG"
       env:
@@ -34,14 +34,9 @@ runs:
     - name: 🚀 Create GitHub Release
       shell: bash
       run: |
-        TAG="sdk/ios-experimental/v${{ inputs.version }}"
+        TAG="sdk/ios/v${{ inputs.version }}"
         gh release create "$TAG" \
-          --title "Thunder iOS SDK (Experimental) v${{ inputs.version }}" \
-          --notes "Experimental release of the Thunder iOS SDK v${{ inputs.version }}.
-
-**Swift Package Manager:** Add this package by pointing to \`tools/sdks/ios/\` at tag \`${TAG}\`.
-
-**Source:** \`tools/sdks/ios/\`" \
-          --prerelease
+          --title "Thunder iOS SDK v${{ inputs.version }}" \
+          --notes "Thunder iOS SDK v${{ inputs.version }}. Source: tools/sdks/ios/"
       env:
         GH_TOKEN: ${{ inputs.github_token }}

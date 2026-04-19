@@ -1,5 +1,5 @@
 name: 'Publish Flutter SDK'
-description: 'Publishes the Thunder Flutter SDK to pub.dev under the thunder_flutter_experimental package name'
+description: 'Publishes the Thunder Flutter SDK to pub.dev as thunder_flutter'
 
 inputs:
   version:
@@ -14,12 +14,11 @@ runs:
       with:
         channel: stable
 
-    - name: 🏷️ Patch package name and version
+    - name: 🏷️ Patch version
       shell: bash
       run: |
         sed -i '' \
-          -e 's/^name: thunder_flutter$/name: thunder_flutter_experimental/' \
-          -e "s/^version: .*/version: ${{ inputs.version }}/" \
+          "s/^version: .*/version: ${{ inputs.version }}/" \
           tools/sdks/flutter/pubspec.yaml
 
     - name: 📦 Get dependencies

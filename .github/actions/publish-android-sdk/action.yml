@@ -1,5 +1,5 @@
 name: 'Publish Android SDK'
-description: 'Publishes the Thunder Android SDK to GitHub Packages under io.thunder.experimental'
+description: 'Publishes the Thunder Android SDK to GitHub Packages under io.thunder'
 
 inputs:
   version:
@@ -19,8 +19,8 @@ runs:
       shell: bash
       run: |
         sed -i '' \
-          -e 's/groupId = "io\.thunder"/groupId = "io.thunder.experimental"/' \
-          -e 's/group = "io\.thunder"/group = "io.thunder.experimental"/' \
+          -e 's/groupId = "io\.thunder"/groupId = "io.thunder"/' \
+          -e 's/group = "io\.thunder"/group = "io.thunder"/' \
           tools/sdks/android/build.gradle.kts
         sed -i '' \
           "s/version = \"[0-9]*\.[0-9]*\.[0-9]*\"/version = \"${{ inputs.version }}\"/g" \

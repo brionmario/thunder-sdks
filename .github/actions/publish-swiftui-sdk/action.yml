@@ -1,12 +1,12 @@
 name: 'Publish SwiftUI SDK'
-description: 'Builds and releases the Thunder SwiftUI SDK as a tagged GitHub Release under the experimental namespace'
+description: 'Builds and releases the Thunder SwiftUI SDK as a tagged GitHub Release'
 
 inputs:
   version:
     description: 'Version to publish (e.g. 0.2.0)'
     required: true
   ios_version:
-    description: 'Published iOS SDK experimental version to depend on (e.g. 0.2.0)'
+    description: 'Published iOS SDK version to depend on (e.g. 0.2.0)'
     required: true
   github_token:
     description: 'GitHub token with contents:write permission'
@@ -18,7 +18,7 @@ runs:
     - name: 🔗 Patch Package.swift to reference published iOS SDK
       shell: bash
       run: |
-        IOS_TAG="sdk/ios-experimental/v${{ inputs.ios_version }}"
+        IOS_TAG="sdk/ios/v${{ inputs.ios_version }}"
         sed -i '' \
           "s|\.package(path: \"../ios\")|.package(url: \"https://github.com/asgardeo/thunder\", revision: \"${IOS_TAG}\")|" \
           tools/sdks/swiftui/Package.swift
@@ -36,7 +36,7 @@ runs:
     - name: 🏷️ Create and push tag
       shell: bash
       run: |
-        TAG="sdk/swiftui-experimental/v${{ inputs.version }}"
+        TAG="sdk/swiftui/v${{ inputs.version }}"
         git tag "$TAG"
         git push origin "$TAG"
       env:
@@ -45,14 +45,9 @@ runs:
     - name: 🚀 Create GitHub Release
       shell: bash
       run: |
-        TAG="sdk/swiftui-experimental/v${{ inputs.version }}"
+        TAG="sdk/swiftui/v${{ inputs.version }}"
         gh release create "$TAG" \
-          --title "Thunder SwiftUI SDK (Experimental) v${{ inputs.version }}" \
-          --notes "Experimental release of the Thunder SwiftUI SDK v${{ inputs.version }}.
-
-Depends on Thunder iOS SDK experimental v${{ inputs.ios_version }}.
-
-**Source:** \`tools/sdks/swiftui/\`" \
-          --prerelease
+          --title "Thunder SwiftUI SDK v${{ inputs.version }}" \
+          --notes "Thunder SwiftUI SDK v${{ inputs.version }}. Depends on iOS SDK v${{ inputs.ios_version }}. Source: tools/sdks/swiftui/"
       env:
         GH_TOKEN: ${{ inputs.github_token }}
