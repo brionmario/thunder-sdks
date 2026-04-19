@@ -110,7 +110,7 @@ jobs:
           git config user.name "${{ env.RELEASE_GIT_USER_NAME }}"
           git config user.email "${{ env.RELEASE_GIT_USER_EMAIL }}"
 
-      - name: 🏷️ Bump version in source file
+      - name: 🏷️ Patch version in workspace
         run: |
           SDK="${{ github.event.inputs.sdk }}"
           VERSION="${{ needs.compute-version.outputs.new_version }}"
@@ -120,34 +120,26 @@ jobs:
               sed -i '' \
                 "s/version = \"[0-9]*\.[0-9]*\.[0-9]*\"/version = \"$VERSION\"/g" \
                 tools/sdks/android/build.gradle.kts
-              git add tools/sdks/android/build.gradle.kts
               ;;
             compose)
               sed -i '' \
                 "s/version = \"[0-9]*\.[0-9]*\.[0-9]*\"/version = \"$VERSION\"/g" \
                 tools/sdks/compose/build.gradle.kts
-              git add tools/sdks/compose/build.gradle.kts
               ;;
             ios)
               sed -i '' \
                 "s/s\.version\s*=\s*'[^']*'/s.version = '$VERSION'/" \
                 tools/sdks/ios/Thunder.podspec
-              git add tools/sdks/ios/Thunder.podspec
               ;;
             swiftui)
               echo "$VERSION" > tools/sdks/swiftui/VERSION
-              git add tools/sdks/swiftui/VERSION
               ;;
             flutter)
               sed -i '' \
                 "s/^version: .*/version: $VERSION/" \
                 tools/sdks/flutter/pubspec.yaml
-              git add tools/sdks/flutter/pubspec.yaml
               ;;
           esac
-
-          git commit -m "Bump $SDK SDK version to $VERSION"
-          git push
 
       - name: 📦 Publish Android SDK
         if: ${{ github.event.inputs.sdk == 'android' }}
@@ -184,3 +176,19 @@ jobs:
         uses: ./.github/actions/publish-flutter-sdk
         with:
           version: ${{ needs.compute-version.outputs.new_version }}
+
+      - name: 💾 Commit and push version bump
+        run: |
+          SDK="${{ github.event.inputs.sdk }}"
+          VERSION="${{ needs.compute-version.outputs.new_version }}"
+
+          case "$SDK" in
+            android)  git add tools/sdks/android/build.gradle.kts ;;
+            compose)  git add tools/sdks/compose/build.gradle.kts ;;
+            ios)      git add tools/sdks/ios/Thunder.podspec ;;
+            swiftui)  git add tools/sdks/swiftui/VERSION ;;
+            flutter)  git add tools/sdks/flutter/pubspec.yaml ;;
+          esac
+
+          git commit -m "Bump $SDK SDK version to $VERSION"
+          git push
