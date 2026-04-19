@@ -18,19 +18,12 @@ runs:
     - name: 🔧 Setup Android Build Environment
       uses: ./.github/actions/setup-android-build
 
-    - name: 🏷️ Patch group ID and version
+    - name: 🏷️ Patch version and Android dependency
       shell: bash
       run: |
-        sed -i '' \
-          -e 's/groupId = "io\.thunder"/groupId = "io.thunder"/' \
-          tools/sdks/compose/build.gradle.kts
         sed -i '' \
           "s/version = \"[0-9]*\.[0-9]*\.[0-9]*\"/version = \"${{ inputs.version }}\"/g" \
           tools/sdks/compose/build.gradle.kts
-
-    - name: 🔗 Substitute Android project dependency with published artifact
-      shell: bash
-      run: |
         ANDROID_VERSION="${{ inputs.android_version }}"
         sed -i '' \
           "s|api(project(\":android\"))|api(\"io.thunder:android:${ANDROID_VERSION}\")|" \
@@ -41,6 +34,18 @@ runs:
       run: |
         # Remove local composite build reference
         sed -i '' '/includeBuild/d' tools/sdks/compose/settings.gradle.kts
+        # Prepend pluginManagement so the Android Gradle Plugin resolves via google()
+        cat - tools/sdks/compose/settings.gradle.kts > /tmp/compose-settings.gradle.kts << 'EOF'
+        pluginManagement {
+            repositories {
+                google()
+                mavenCentral()
+                gradlePluginPortal()
+            }
+        }
+
+        EOF
+        mv /tmp/compose-settings.gradle.kts tools/sdks/compose/settings.gradle.kts
         # Add dependency resolution repos including GitHub Packages
         cat >> tools/sdks/compose/settings.gradle.kts << 'GRADLE_EOF'
 

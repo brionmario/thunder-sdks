@@ -15,16 +15,27 @@ runs:
     - name: 🔧 Setup Android Build Environment
       uses: ./.github/actions/setup-android-build
 
-    - name: 🏷️ Patch group ID and version
+    - name: 🏷️ Patch version
       shell: bash
       run: |
         sed -i '' \
-          -e 's/groupId = "io\.thunder"/groupId = "io.thunder"/' \
-          -e 's/group = "io\.thunder"/group = "io.thunder"/' \
-          tools/sdks/android/build.gradle.kts
-        sed -i '' \
           "s/version = \"[0-9]*\.[0-9]*\.[0-9]*\"/version = \"${{ inputs.version }}\"/g" \
           tools/sdks/android/build.gradle.kts
+
+    - name: 🏗️ Prepend pluginManagement to settings
+      shell: bash
+      run: |
+        cat - tools/sdks/android/settings.gradle.kts > /tmp/android-settings.gradle.kts << 'EOF'
+        pluginManagement {
+            repositories {
+                google()
+                mavenCentral()
+                gradlePluginPortal()
+            }
+        }
+
+        EOF
+        mv /tmp/android-settings.gradle.kts tools/sdks/android/settings.gradle.kts
 
     - name: 📦 Append GitHub Packages publishing repository
       shell: bash
