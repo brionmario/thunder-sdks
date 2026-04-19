@@ -27,13 +27,13 @@ class ThunderAcceptInvite extends StatelessWidget {
       applicationId: applicationId,
       onSuccess: onSuccess,
       onError: onError,
-      builder: (ctx, isLoading, error) => Column(
+      builder: (ctx, isLoading, error, onAccept) => Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(state.i18n.resolve('acceptInvite.title')),
           if (error != null) Text(error),
           GestureDetector(
-            onTap: isLoading ? null : null,
+            onTap: isLoading ? null : onAccept,
             child: Container(
               constraints: const BoxConstraints(minHeight: 44),
               child: Text(state.i18n.resolve('acceptInvite.submit')),
@@ -51,7 +51,7 @@ class BaseThunderAcceptInvite extends StatefulWidget {
   final String applicationId;
   final VoidCallback? onSuccess;
   final VoidCallback? onError;
-  final Widget Function(BuildContext context, bool isLoading, String? error) builder;
+  final Widget Function(BuildContext context, bool isLoading, String? error, VoidCallback onAccept) builder;
 
   const BaseThunderAcceptInvite({
     super.key,
@@ -127,5 +127,5 @@ class _BaseThunderAcceptInviteState extends State<BaseThunderAcceptInvite> {
   }
 
   @override
-  Widget build(BuildContext context) => widget.builder(context, _isLoading, _error);
+  Widget build(BuildContext context) => widget.builder(context, _isLoading, _error, _accept);
 }
