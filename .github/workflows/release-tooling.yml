@@ -190,5 +190,9 @@ jobs:
             flutter)  git add tools/sdks/flutter/pubspec.yaml ;;
           esac
 
-          git commit -m "Bump $SDK SDK version to $VERSION"
-          git push
+          if ! git diff --staged --quiet; then
+            git commit -m "Bump $SDK SDK version to $VERSION"
+            git push
+          else
+            echo "ℹ️ Version already at $VERSION, skipping commit"
+          fi
