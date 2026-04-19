@@ -1,0 +1,183 @@
+---
+title: Organization Widgets
+description: Flutter widgets for B2B organization management
+---
+
+# Organization Widgets
+
+Organization widgets display and manage the authenticated user's organizations. These are intended for B2B applications where users belong to one or more organizations.
+
+---
+
+## `ThunderOrganization`
+
+Displays the name of the organization the current session is scoped to.
+
+### Usage
+
+```dart
+import 'package:thunder_flutter/thunder_flutter.dart';
+
+const ThunderOrganization()
+```
+
+### Base Variant
+
+`BaseThunderOrganization` provides the `Organization?` to a custom `builder`:
+
+```dart
+BaseThunderOrganization(
+  builder: (context, org) => Row(
+    children: [
+      const Icon(Icons.business),
+      Text(org?.name ?? 'Personal'),
+    ],
+  ),
+)
+```
+
+---
+
+## `ThunderOrganizationList`
+
+Lists all organizations the authenticated user belongs to.
+
+### Usage
+
+```dart
+ThunderOrganizationList(
+  onSelect: (org) {
+    Navigator.pushNamed(context, '/org/${org.id}');
+  },
+)
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `onSelect` | `void Function(Organization)?` | ❌ | Called when the user taps an organization |
+
+### Base Variant
+
+`BaseThunderOrganizationList` exposes `(organizations, isLoading, error, onSelect)` to a `builder`:
+
+```dart
+BaseThunderOrganizationList(
+  builder: (context, orgs, isLoading, error, select) {
+    if (isLoading) return const CircularProgressIndicator();
+    return ListView.builder(
+      itemCount: orgs.length,
+      itemBuilder: (_, i) => ListTile(
+        title: Text(orgs[i].name),
+        onTap: () => select(orgs[i]),
+      ),
+    );
+  },
+)
+```
+
+---
+
+## `ThunderOrganizationProfile`
+
+Displays and edits the current organization's name and settings.
+
+### Usage
+
+```dart
+ThunderOrganizationProfile(
+  onSaved: () { /* saved */ },
+  onError: () { /* failed */ },
+)
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `onSaved` | `VoidCallback?` | ❌ | Called after the organization profile is saved |
+| `onError` | `VoidCallback?` | ❌ | Called if save fails |
+
+---
+
+## `ThunderOrganizationSwitcher`
+
+Picker to switch the active session to a different organization via token exchange.
+
+### Usage
+
+```dart
+const ThunderOrganizationSwitcher()
+```
+
+### Base Variant
+
+`BaseThunderOrganizationSwitcher` exposes `(organizations, currentOrg, isSwitching, error, switchOrg)`:
+
+```dart
+BaseThunderOrganizationSwitcher(
+  builder: (context, orgs, current, isSwitching, error, switchOrg) {
+    return DropdownButton<String>(
+      value: current?.id,
+      items: orgs.map((org) => DropdownMenuItem(
+        value: org.id,
+        child: Text(org.name),
+      )).toList(),
+      onChanged: isSwitching ? null : (id) {
+        final org = orgs.firstWhere((o) => o.id == id);
+        switchOrg(org);
+      },
+    );
+  },
+)
+```
+
+---
+
+## `ThunderCreateOrganization`
+
+Form to create a new organization under the authenticated user's account.
+
+### Usage
+
+```dart
+ThunderCreateOrganization(
+  onCreated: (org) {
+    print('Created: ${org.name}');
+  },
+)
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `onCreated` | `void Function(Organization)?` | ❌ | Called after the organization is created successfully |
+| `onError` | `void Function(Object)?` | ❌ | Called if creation fails |
+
+---
+
+## `ThunderLanguageSwitcher`
+
+Picker to switch the active UI locale for widget labels.
+
+### Usage
+
+```dart
+const ThunderLanguageSwitcher()
+```
+
+### Base Variant
+
+`BaseThunderLanguageSwitcher` exposes `(locales, activeLocale, setLocale)`:
+
+```dart
+BaseThunderLanguageSwitcher(
+  builder: (context, locales, active, setLocale) => DropdownButton<String>(
+    value: active,
+    items: locales.map((l) => DropdownMenuItem(value: l, child: Text(l))).toList(),
+    onChanged: (locale) => setLocale(locale!),
+  ),
+)
+```

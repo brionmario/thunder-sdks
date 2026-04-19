@@ -1,0 +1,106 @@
+---
+title: Compose Components Overview
+description: Pre-built Jetpack Compose components for Thunder authentication in Android applications
+---
+
+# Compose Components
+
+The `io.thunder:compose` package provides a complete set of pre-built Jetpack Compose composables for Thunder authentication and user management. It depends on the [Thunder Android SDK](/sdks/android/overview).
+
+## Installation
+
+`io.thunder:compose` is a secondary package. Add it alongside `io.thunder:android` in your app-level `build.gradle.kts`:
+
+```kotlin title="app/build.gradle.kts" showLineNumbers
+dependencies {
+    // Core Android SDK (required)
+    implementation("io.thunder:android:0.1.0")
+
+    // Compose UI components
+    implementation("io.thunder:compose:0.1.0")
+}
+```
+
+## Setup
+
+Use the `ThunderProvider` composable at the root of your Compose hierarchy. It initializes the SDK and provides `ThunderState` to all descendant composables via `LocalThunder`.
+
+```kotlin title="MainActivity.kt" showLineNumbers
+import io.thunder.android.ThunderConfig
+import io.thunder.compose.ThunderProvider
+
+class MainActivity : ComponentActivity() {
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContent {
+            ThunderProvider(
+                config = ThunderConfig(
+                    baseUrl = "https://localhost:8090",
+                    clientId = "<your-client-id>",
+                    applicationId = "<your-application-id>"
+                )
+            ) {
+                MyApp()
+            }
+        }
+    }
+}
+```
+
+## Components
+
+### Action Components
+
+| Component | Description |
+| :--- | :--- |
+| [`ThunderSignInButton`](/sdks/android/components/action-components#thundersigninbutton) | Tappable button that triggers the sign-in flow |
+| [`ThunderSignOutButton`](/sdks/android/components/action-components#thundersignoutbutton) | Tappable button that signs the current user out |
+| [`ThunderSignUpButton`](/sdks/android/components/action-components#thundersignupbutton) | Tappable button that triggers the sign-up flow |
+
+### Control Components
+
+| Component | Description |
+| :--- | :--- |
+| [`ThunderSignedIn`](/sdks/android/components/control-components#thundersignedin) | Renders content only when the user is authenticated |
+| [`ThunderSignedOut`](/sdks/android/components/control-components#thundersignedout) | Renders content only when the user is not authenticated |
+| [`ThunderLoading`](/sdks/android/components/control-components#thunderloading) | Renders content while authentication state is loading |
+| [`ThunderCallback`](/sdks/android/components/control-components#thundercallback) | Handles the OAuth2 redirect callback |
+
+### User Components
+
+| Component | Description |
+| :--- | :--- |
+| [`ThunderUser`](/sdks/android/components/user-components#thunderuser) | Displays the authenticated user's name |
+| [`ThunderUserDropdown`](/sdks/android/components/user-components#thunderuserdropdown) | User menu with profile and sign-out actions |
+| [`ThunderUserProfile`](/sdks/android/components/user-components#thunderuserprofile) | Editable user profile form |
+
+### Organization Components
+
+| Component | Description |
+| :--- | :--- |
+| [`ThunderOrganization`](/sdks/android/components/organization-components#thunderorganization) | Displays the current organization name |
+| [`ThunderOrganizationList`](/sdks/android/components/organization-components#thunderorganizationlist) | Lists the user's organizations |
+| [`ThunderOrganizationProfile`](/sdks/android/components/organization-components#thunderorganizationprofile) | Displays and edits the current organization |
+| [`ThunderOrganizationSwitcher`](/sdks/android/components/organization-components#thunderorganizationswitcher) | Picker to switch the active organization |
+| [`ThunderCreateOrganization`](/sdks/android/components/organization-components#thundercreateorganization) | Form to create a new organization |
+| [`ThunderLanguageSwitcher`](/sdks/android/components/organization-components#thunderlanguageswitcher) | Picker to switch the active UI locale |
+
+## Accessing State Directly
+
+In composables that need direct access to authentication state, use `LocalThunder`:
+
+```kotlin
+import io.thunder.compose.LocalThunder
+
+@Composable
+fun MyComposable() {
+    val state = LocalThunder.current
+    if (state.isSignedIn) {
+        Text("Welcome, ${state.user?.displayName ?: "User"}!")
+    }
+}
+```
+
+## Base Variants
+
+Every component ships with an unstyled `Base` variant (for example, `BaseThunderSignInButton`) that accepts a custom content lambda. Use the base variant when you need full control over appearance.

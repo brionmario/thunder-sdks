@@ -1,0 +1,78 @@
+---
+title: Flutter SDK Overview
+sidebar_position: 1
+sidebar_label: Overview
+description: Thunder Flutter SDK for cross-platform authentication in Flutter applications
+---
+
+# Flutter SDK
+
+The Thunder Flutter SDK (`thunder_flutter`) provides a complete set of widgets and APIs to integrate Thunder authentication and user management into your Flutter applications. It delegates all protocol operations to the native iOS and Android SDKs via a platform channel.
+
+## Installation
+
+Add the package to your `pubspec.yaml`:
+
+```yaml title="pubspec.yaml"
+dependencies:
+  thunder_flutter: ^0.1.0
+```
+
+```bash
+flutter pub get
+```
+
+## Getting Started
+
+To get started quickly, check out the [Flutter Quickstart Guide](/guides/quick-start/connect-your-application/flutter) for step-by-step instructions.
+
+## Features
+
+### Widgets
+
+The SDK provides Flutter widgets that integrate directly into your widget tree:
+
+- **[`ThunderProvider`](/sdks/flutter/apis/thunder-provider)** — `InheritedWidget` that initializes the SDK and provides reactive authentication state to the entire widget tree
+- **[Widgets Overview](/sdks/flutter/widgets/overview)** — Full widget list
+- **[Action Widgets](/sdks/flutter/widgets/action-widgets)** — `ThunderSignInButton`, `ThunderSignOutButton`, `ThunderSignUpButton`
+- **[Control Widgets](/sdks/flutter/widgets/control-widgets)** — `ThunderSignedIn`, `ThunderSignedOut`, `ThunderLoading`, `ThunderCallback`
+- **[User Widgets](/sdks/flutter/widgets/user-widgets)** — `ThunderUser`, `ThunderUserDropdown`, `ThunderUserProfile`
+- **[Organization Widgets](/sdks/flutter/widgets/organization-widgets)** — `ThunderOrganizationSwitcher` and B2B helpers
+
+### Authentication
+
+The SDK supports two sign-in approaches:
+
+- **Redirect mode** — Opens Thunder's hosted sign-in page in the device browser using [`buildSignInUrl()`](/sdks/flutter/apis/thunder-client#buildsigninurl) and handles the callback with [`handleRedirectCallback()`](/sdks/flutter/apis/thunder-client#handleredirectcallback)
+- **Embedded mode** — Drives a fully app-native sign-in flow via the Flow Execution API using [`signIn()`](/sdks/flutter/apis/thunder-client#signin), keeping users entirely within your app
+
+### Token Management
+
+The SDK handles token lifecycle automatically via the native platform SDKs:
+
+- Transparent token refresh before expiry
+- Secure token storage (Keychain on iOS, EncryptedSharedPreferences on Android)
+- ID token validation (issuer, expiry, clock skew)
+- Token exchange for organization switching (RFC 8693)
+
+### User & Profile Management
+
+- [`getUser()`](/sdks/flutter/apis/thunder-client#getuser) — Fetch verified user claims from the `/userinfo` endpoint
+- [`getUserProfile()`](/sdks/flutter/apis/thunder-client#getuserprofile) — Fetch the full SCIM user profile
+- [`updateUserProfile()`](/sdks/flutter/apis/thunder-client#updateuserprofile) — Update user profile attributes
+
+### Organizations (B2B)
+
+- List all organizations or the user's memberships
+- Create organizations and invite users
+- Switch the active session to a different organization
+
+## API Reference
+
+- **[`ThunderConfig`](/sdks/flutter/apis/thunder-config)** — SDK configuration options
+- **[`ThunderClient`](/sdks/flutter/apis/thunder-client)** — Core SDK client with all authentication and management methods
+- **[`ThunderProvider`](/sdks/flutter/apis/thunder-provider)** — Widget that provides reactive authentication state to the widget tree
+
+## Error Handling
+
+All async methods throw `IAMException` on failure. See [`ThunderClient` — Error Handling](/sdks/flutter/apis/thunder-client#error-handling) for the full list of error codes.

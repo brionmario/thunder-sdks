@@ -1,0 +1,117 @@
+---
+title: User Components
+description: Compose components for displaying and managing user profiles
+---
+
+# User Components
+
+User components display authenticated user information and provide profile management.
+
+---
+
+## `ThunderUser`
+
+Read-only display of the authenticated user's display name or username.
+
+### Usage
+
+```kotlin
+import io.thunder.compose.components.presentation.user.ThunderUser
+
+ThunderUser()
+```
+
+### Base Variant
+
+`BaseThunderUser` provides the `User?` object to a custom content lambda:
+
+```kotlin
+BaseThunderUser { user ->
+    Row {
+        Icon(Icons.Default.Person, contentDescription = null)
+        Text(user?.displayName ?: "Guest")
+    }
+}
+```
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `modifier` | `Modifier` | ❌ | Compose modifier |
+| `content` | `@Composable (User?) -> Unit` | ✅ | Lambda receiving the current `User?` |
+
+---
+
+## `ThunderUserDropdown`
+
+User menu that shows the authenticated user's name and provides sign-out and profile actions.
+
+### Usage
+
+```kotlin
+import io.thunder.compose.components.presentation.user.ThunderUserDropdown
+
+ThunderUserDropdown()
+```
+
+### Base Variant
+
+`BaseThunderUserDropdown` passes state to a custom content lambda:
+
+```kotlin
+BaseThunderUserDropdown { user, isLoading, signOut ->
+    DropdownMenu(expanded = true, onDismissRequest = {}) {
+        DropdownMenuItem(
+            text = { Text("Sign Out") },
+            onClick = { signOut() }
+        )
+    }
+}
+```
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `modifier` | `Modifier` | ❌ | Compose modifier |
+| `content` | `@Composable (User?, Boolean, () -> Unit) -> Unit` | ✅ | Lambda receiving `user`, `isLoading`, and `signOut` action |
+
+---
+
+## `ThunderUserProfile`
+
+Editable user profile form. Fetches the current user's SCIM profile on first composition and submits updates on save.
+
+### Usage
+
+```kotlin
+import io.thunder.compose.components.presentation.user.ThunderUserProfile
+
+ThunderUserProfile(
+    onSaved = { /* profile updated */ },
+    onError = { error -> Log.e("Profile", "Save failed", error) }
+)
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `modifier` | `Modifier` | ❌ | Compose modifier |
+| `onSaved` | `(() -> Unit)?` | ❌ | Called after the profile is saved successfully |
+| `onError` | `((Throwable) -> Unit)?` | ❌ | Called if the save operation fails |
+
+### Base Variant
+
+`BaseThunderUserProfile` provides full control via a content lambda:
+
+```kotlin
+BaseThunderUserProfile(onSaved = {}) { profile, fields, isLoading, error, save ->
+    Column {
+        error?.let { Text(it, color = Color.Red) }
+        OutlinedTextField(
+            value = fields["displayName"] ?: "",
+            onValueChange = { /* update fields */ },
+            label = { Text("Display Name") }
+        )
+        Button(onClick = save, enabled = !isLoading) { Text("Save") }
+    }
+}
+```

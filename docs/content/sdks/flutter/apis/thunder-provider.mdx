@@ -1,0 +1,135 @@
+---
+title: ThunderProvider
+description: Flutter widget that provides reactive authentication state to the widget tree
+---
+
+# `ThunderProvider`
+
+`ThunderProvider` is an `InheritedWidget` that initializes the Thunder SDK and provides reactive authentication state to the entire widget tree. Wrap your root widget with `ThunderProvider` to enable authentication features throughout your app.
+
+## Overview
+
+`ThunderProvider` initializes `ThunderClient` using the provided `ThunderConfig`, tracks authentication state, and rebuilds descendant widgets when sign-in or sign-out events occur.
+
+## Usage
+
+### Basic Usage
+
+```dart title="lib/main.dart" showLineNumbers
+import 'package:flutter/material.dart';
+import 'package:thunder_flutter/thunder_flutter.dart';
+
+void main() {
+  runApp(
+    ThunderProvider(
+      config: ThunderConfig(
+        baseUrl: 'https://localhost:8090',
+        clientId: '<your-client-id>',
+        applicationId: '<your-application-id>',
+      ),
+      child: const MyApp(),
+    ),
+  );
+}
+```
+
+### Accessing Provider State
+
+Use `ThunderProvider.of(context)` from any descendant widget to access the `ThunderState`:
+
+```dart
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final thunder = ThunderProvider.of(context);
+
+    if (thunder.isLoading) return const CircularProgressIndicator();
+
+    return thunder.isSignedIn
+        ? Text('Welcome, ${thunder.user?.displayName ?? 'User'}!')
+        : ElevatedButton(
+            onPressed: () => _signIn(context),
+            child: const Text('Sign In'),
+          );
+  }
+}
+```
+
+## Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `config` | `ThunderConfig` | ✅ | SDK configuration |
+| `child` | `Widget` | ✅ | Root widget of the subtree |
+| `client` | `ThunderClient?` | ❌ | Custom `ThunderClient` instance. Used for testing |
+
+## ThunderState Properties
+
+`ThunderProvider.of(context)` returns a `ThunderState` with the following properties:
+
+| Property | Type | Description |
+| :--- | :--- | :--- |
+| `client` | `ThunderClient` | The underlying SDK client |
+| `isSignedIn` | `bool` | Whether the user is currently authenticated |
+| `isLoading` | `bool` | Whether the SDK is initializing or fetching state |
+| `initialized` | `bool` | Whether `initialize()` has completed |
+| `user` | `User?` | The currently authenticated user, or `null` if not signed in |
+| `error` | `String?` | Error message from the last failed operation, or `null` |
+| `preferences` | `ThunderPreferences?` | UI preferences from `ThunderConfig.preferences` |
+
+## ThunderState Methods
+
+### `ThunderProvider.of`
+
+```dart
+static ThunderState of(BuildContext context)
+```
+
+Returns the nearest `ThunderState` from the widget tree. Subscribes to state changes so the calling widget rebuilds on sign-in or sign-out.
+
+**Throws:** An assertion error if called outside a `ThunderProvider`.
+
+---
+
+### `refresh`
+
+```dart
+Future<void> refresh()
+```
+
+Re-fetches authentication state from the native SDK and updates the widget tree. Call this after a redirect-based sign-in callback or after `signOut()` to keep the provider state in sync.
+
+```dart
+Future<void> _handleCallback(String url) async {
+  final thunder = ThunderProvider.of(context);
+  await thunder.client.handleRedirectCallback(url);
+  await thunder.refresh(); // re-fetch user and update UI
+}
+```
+
+---
+
+### `setLocale`
+
+```dart
+void setLocale(String locale)
+```
+
+Switches the active locale for SDK UI component labels and triggers a rebuild.
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `locale` | `String` | BCP 47 locale code (for example, `'fr-FR'`) |
+
+---
+
+## Widget Rebuild Behavior
+
+`ThunderProvider` rebuilds descendant widgets that call `ThunderProvider.of(context)` when any of the following change:
+
+- `isSignedIn`
+- `isLoading`
+- `error`
+- Active locale (via `setLocale`)
+
+Widgets that do not call `ThunderProvider.of(context)` are not affected.

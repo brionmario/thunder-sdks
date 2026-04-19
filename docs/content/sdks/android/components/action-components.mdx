@@ -1,0 +1,110 @@
+---
+title: Action Components
+description: Compose action components for triggering Thunder authentication flows
+---
+
+# Action Components
+
+Action components trigger authentication flows. They read state from `LocalThunder` and call through to `ThunderState.client` automatically.
+
+---
+
+## `ThunderSignInButton`
+
+Tappable composable that initiates the sign-in flow. Use the `onTap` lambda to open your sign-in UI (redirect or embedded).
+
+### Usage
+
+```kotlin title="HomeScreen.kt" showLineNumbers
+import io.thunder.compose.components.actions.ThunderSignInButton
+
+@Composable
+fun HomeScreen() {
+    ThunderSignInButton {
+        // open redirect or embedded sign-in
+    }
+}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `modifier` | `Modifier` | ❌ | Compose modifier for layout and styling |
+| `onTap` | `(() -> Unit)?` | ❌ | Called when the button is tapped. Use this to launch your sign-in flow |
+
+### Base Variant
+
+`BaseThunderSignInButton` renders an unstyled composable so you can apply your own design:
+
+```kotlin
+BaseThunderSignInButton(label = "Log In", isLoading = false) {
+    // handle tap
+}
+```
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `label` | `String` | ✅ | Button label text |
+| `isLoading` | `Boolean` | ❌ | Disables the button and shows loading state. Defaults to `false` |
+| `modifier` | `Modifier` | ❌ | Compose modifier |
+| `onClick` | `() -> Unit` | ✅ | Called when tapped |
+
+---
+
+## `ThunderSignOutButton`
+
+Tappable composable that calls `ThunderState.client.signOut()` and then refreshes state.
+
+### Usage
+
+```kotlin
+ThunderSignOutButton {
+    // navigate to home screen after sign-out
+}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `modifier` | `Modifier` | ❌ | Compose modifier |
+| `onSignedOut` | `(() -> Unit)?` | ❌ | Called after sign-out completes successfully |
+| `onError` | `((Throwable) -> Unit)?` | ❌ | Called if sign-out fails |
+
+### Base Variant
+
+`BaseThunderSignOutButton` accepts a custom content lambda:
+
+```kotlin
+BaseThunderSignOutButton { isLoading, signOut ->
+    Button(onClick = signOut, enabled = !isLoading) {
+        Text(if (isLoading) "Signing out…" else "Sign Out")
+    }
+}
+```
+
+---
+
+## `ThunderSignUpButton`
+
+Tappable composable that initiates the sign-up flow. Use `onTap` to open your registration UI.
+
+### Usage
+
+```kotlin
+ThunderSignUpButton {
+    // open sign-up UI
+}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `modifier` | `Modifier` | ❌ | Compose modifier |
+| `onTap` | `(() -> Unit)?` | ❌ | Called when the button is tapped |
+
+### Base Variant
+
+`BaseThunderSignUpButton` accepts the same parameters as `BaseThunderSignInButton`.

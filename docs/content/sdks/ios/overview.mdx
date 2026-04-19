@@ -1,0 +1,88 @@
+---
+title: iOS SDK Overview
+sidebar_position: 1
+sidebar_label: Overview
+description: Thunder Swift SDK for native authentication in iOS and macOS applications
+---
+
+# iOS SDK
+
+The Thunder Swift SDK (`Thunder`) provides a complete set of APIs to integrate Thunder authentication and user management into your native iOS and macOS applications. It is written in Swift and built with Swift Concurrency (`async`/`await`).
+
+## Installation
+
+### Swift Package Manager
+
+#### Using Xcode
+
+1. Navigate to **File** → **Add Package Dependencies**
+2. Enter the repository URL: `https://github.com/asgardeo/thunder`
+3. Select **Up to Next Major Version** from `0.1.0`
+4. Add the **Thunder** library to your app target
+
+#### Using Package.swift
+
+```swift title="Package.swift"
+dependencies: [
+    .package(url: "https://github.com/asgardeo/thunder", from: "0.1.0")
+],
+targets: [
+    .target(
+        name: "MyApp",
+        dependencies: [.product(name: "Thunder", package: "thunder")]
+    )
+]
+```
+
+## Getting Started
+
+To get started quickly, check out the [iOS Quickstart Guide](/guides/quick-start/connect-your-application/ios) for step-by-step instructions.
+
+## Features
+
+### Authentication
+
+The SDK supports two sign-in approaches:
+
+- **Redirect mode** — Opens Thunder's hosted sign-in page in an `ASWebAuthenticationSession` using [`buildSignInURL()`](/sdks/ios/apis/thunder-client#buildsigninurl) and handles the callback with [`handleRedirectCallback(url:)`](/sdks/ios/apis/thunder-client#handleredirectcallback)
+- **Embedded mode** — Drives a fully app-native sign-in flow via the Flow Execution API using [`signIn(payload:request:)`](/sdks/ios/apis/thunder-client#signin), keeping users entirely within your app
+
+### Token Management
+
+The SDK handles token lifecycle automatically:
+
+- Transparent token refresh before expiry
+- Keychain-based token storage via `KeychainStorageAdapter` (default)
+- ID token validation (issuer, expiry, clock skew)
+- Token exchange for organization switching (RFC 8693)
+
+### User & Profile Management
+
+- [`getUser()`](/sdks/ios/apis/thunder-client#getuser) — Fetch verified user claims from the `/userinfo` endpoint
+- [`getUserProfile()`](/sdks/ios/apis/thunder-client#getuserprofile) — Fetch the full SCIM user profile
+- [`updateUserProfile(payload:userId:)`](/sdks/ios/apis/thunder-client#updateuserprofile) — Update user profile attributes
+
+### Organizations (B2B)
+
+- List all organizations or the user's memberships
+- Create organizations and invite users
+- Switch the active session to a different organization
+
+## API Reference
+
+- **[`ThunderConfig`](/sdks/ios/apis/thunder-config)** — SDK configuration options
+- **[`ThunderClient`](/sdks/ios/apis/thunder-client)** — Main SDK client with all authentication and management methods
+
+## SwiftUI Components
+
+The `ThunderSwiftUI` package provides pre-built SwiftUI views that sit on top of the `Thunder` core SDK. Install it as a secondary package when you want drop-in UI components.
+
+- **[Components Overview](/sdks/ios/components/overview)** — Installation and full component list
+- **[Action Components](/sdks/ios/components/action-components)** — `ThunderSignInButton`, `ThunderSignOutButton`, `ThunderSignUpButton`
+- **[Control Components](/sdks/ios/components/control-components)** — `ThunderSignedIn`, `ThunderSignedOut`, `ThunderLoading`, `ThunderCallback`
+- **[User Components](/sdks/ios/components/user-components)** — `ThunderUser`, `ThunderUserDropdown`, `ThunderUserProfile`
+- **[Organization Components](/sdks/ios/components/organization-components)** — `ThunderOrganizationSwitcher` and B2B helpers
+
+## Error Handling
+
+All `async throws` methods throw `IAMError` on failure. See [`ThunderClient` — Error Handling](/sdks/ios/apis/thunder-client#error-handling) for the full list of error codes.

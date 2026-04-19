@@ -1,0 +1,116 @@
+---
+title: SwiftUI Components Overview
+description: Pre-built SwiftUI components for Thunder authentication in iOS applications
+---
+
+# SwiftUI Components
+
+The `ThunderSwiftUI` package provides a complete set of pre-built SwiftUI views for Thunder authentication and user management. It depends on and re-exports the [Thunder iOS SDK](/sdks/ios/overview).
+
+## Installation
+
+`ThunderSwiftUI` is a secondary package that requires the `Thunder` iOS SDK as a dependency. Add both packages via Swift Package Manager.
+
+### Using Xcode
+
+1. Navigate to **File** → **Add Package Dependencies**
+2. Enter the repository URL: `https://github.com/asgardeo/thunder`
+3. When prompted to choose products, add both **Thunder** and **ThunderSwiftUI** to your app target
+
+### Using Package.swift
+
+```swift title="Package.swift" showLineNumbers
+dependencies: [
+    .package(url: "https://github.com/asgardeo/thunder", from: "0.1.0")
+],
+targets: [
+    .target(
+        name: "MyApp",
+        dependencies: [
+            .product(name: "Thunder", package: "thunder"),
+            .product(name: "ThunderSwiftUI", package: "thunder"),
+        ]
+    )
+]
+```
+
+## Setup
+
+Apply the `.thunderProvider(config:)` modifier to your root view. This injects `ThunderState` into the SwiftUI environment so all descendant views can access authentication state.
+
+```swift title="MyApp.swift" showLineNumbers
+import SwiftUI
+import ThunderSwiftUI
+
+@main
+struct MyApp: App {
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .thunderProvider(config: ThunderConfig(
+                    baseUrl: "https://localhost:8090",
+                    clientId: "<your-client-id>",
+                    applicationId: "<your-application-id>"
+                ))
+        }
+    }
+}
+```
+
+## Components
+
+### Action Components
+
+| Component | Description |
+| :--- | :--- |
+| [`ThunderSignInButton`](/sdks/ios/components/action-components#thundersigninbutton) | Tappable button that triggers the sign-in flow |
+| [`ThunderSignOutButton`](/sdks/ios/components/action-components#thundersignoutbutton) | Tappable button that signs the current user out |
+| [`ThunderSignUpButton`](/sdks/ios/components/action-components#thundersignupbutton) | Tappable button that triggers the sign-up flow |
+
+### Control Components
+
+| Component | Description |
+| :--- | :--- |
+| [`ThunderSignedIn`](/sdks/ios/components/control-components#thundersignedin) | Renders content only when the user is authenticated |
+| [`ThunderSignedOut`](/sdks/ios/components/control-components#thundersignedout) | Renders content only when the user is not authenticated |
+| [`ThunderLoading`](/sdks/ios/components/control-components#thunderloading) | Renders content while authentication state is loading |
+| [`ThunderCallback`](/sdks/ios/components/control-components#thundercallback) | Handles the OAuth2 redirect callback |
+
+### User Components
+
+| Component | Description |
+| :--- | :--- |
+| [`ThunderUser`](/sdks/ios/components/user-components#thunderuser) | Displays the authenticated user's name |
+| [`ThunderUserDropdown`](/sdks/ios/components/user-components#thunderuserdropdown) | User menu with profile and sign-out actions |
+| [`ThunderUserProfile`](/sdks/ios/components/user-components#thunderuserprofile) | Editable user profile form |
+
+### Organization Components
+
+| Component | Description |
+| :--- | :--- |
+| [`ThunderOrganization`](/sdks/ios/components/organization-components#thunderorganization) | Displays the current organization name |
+| [`ThunderOrganizationList`](/sdks/ios/components/organization-components#thunderorganizationlist) | Lists the user's organizations |
+| [`ThunderOrganizationProfile`](/sdks/ios/components/organization-components#thunderorganizationprofile) | Displays and edits the current organization |
+| [`ThunderOrganizationSwitcher`](/sdks/ios/components/organization-components#thunderorganizationswitcher) | Picker to switch the active organization |
+| [`ThunderCreateOrganization`](/sdks/ios/components/organization-components#thundercreateorganization) | Form to create a new organization |
+| [`ThunderLanguageSwitcher`](/sdks/ios/components/organization-components#thunderlanguageswitcher) | Picker to switch the active UI locale |
+
+## Accessing State Directly
+
+In views that need direct access to authentication state, use `@EnvironmentObject`:
+
+```swift
+struct MyView: View {
+    @EnvironmentObject var state: ThunderState
+
+    var body: some View {
+        if state.isSignedIn {
+            Text("Welcome, \(state.user?.displayName ?? "User")!")
+        }
+    }
+}
+```
+
+## Base Variants
+
+Every component ships with an unstyled `Base` variant (for example, `BaseThunderSignInButton`) that accepts a custom content builder. Use the base variant when you need full control over appearance.

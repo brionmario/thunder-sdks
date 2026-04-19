@@ -1,0 +1,117 @@
+---
+title: User Widgets
+description: Flutter widgets for displaying and managing user profiles
+---
+
+# User Widgets
+
+User widgets display authenticated user information and provide profile management.
+
+---
+
+## `ThunderUser`
+
+Read-only display of the authenticated user's display name or username.
+
+### Usage
+
+```dart
+import 'package:thunder_flutter/thunder_flutter.dart';
+
+const ThunderUser()
+```
+
+### Base Variant
+
+`BaseThunderUser` provides the `User?` object to a custom `builder`:
+
+```dart
+BaseThunderUser(
+  builder: (context, user) => Row(
+    children: [
+      const Icon(Icons.person),
+      Text(user?.displayName ?? 'Guest'),
+    ],
+  ),
+)
+```
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `builder` | `Widget Function(BuildContext, User?)` | ✅ | Builder receiving the current `User?` |
+
+---
+
+## `ThunderUserDropdown`
+
+User menu that shows the authenticated user's name and provides sign-out and profile actions.
+
+### Usage
+
+```dart
+const ThunderUserDropdown()
+```
+
+### Base Variant
+
+`BaseThunderUserDropdown` passes state to a custom `builder`:
+
+```dart
+BaseThunderUserDropdown(
+  builder: (context, user, isLoading, signOut) => PopupMenuButton(
+    itemBuilder: (_) => [
+      PopupMenuItem(onTap: signOut, child: const Text('Sign Out')),
+    ],
+    child: Text(user?.displayName ?? ''),
+  ),
+)
+```
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `builder` | `Widget Function(BuildContext, User?, bool, VoidCallback)` | ✅ | Builder receiving `user`, `isLoading`, and `signOut` callback |
+
+---
+
+## `ThunderUserProfile`
+
+Editable user profile form. Fetches the current user's SCIM profile on first build and submits updates on save.
+
+### Usage
+
+```dart
+ThunderUserProfile(
+  onSaved: () { /* profile updated */ },
+  onError: () { /* save failed */ },
+)
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `onSaved` | `VoidCallback?` | ❌ | Called after the profile is saved successfully |
+| `onError` | `VoidCallback?` | ❌ | Called if the save operation fails |
+
+### Base Variant
+
+`BaseThunderUserProfile` provides full control via a `builder`:
+
+```dart
+BaseThunderUserProfile(
+  onSaved: () {},
+  builder: (context, profile, fields, isLoading, error, save) => Column(
+    children: [
+      if (error != null) Text(error, style: const TextStyle(color: Colors.red)),
+      TextField(
+        controller: fields['displayName'],
+        decoration: const InputDecoration(labelText: 'Display Name'),
+      ),
+      ElevatedButton(
+        onPressed: isLoading ? null : save,
+        child: const Text('Save'),
+      ),
+    ],
+  ),
+)
+```

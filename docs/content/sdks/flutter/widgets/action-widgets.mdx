@@ -1,0 +1,117 @@
+---
+title: Action Widgets
+description: Flutter action widgets for triggering Thunder authentication flows
+---
+
+# Action Widgets
+
+Action widgets trigger authentication flows. They read state from `ThunderProvider` and call through to `ThunderState.client` automatically.
+
+---
+
+## `ThunderSignInButton`
+
+Tappable widget that initiates the sign-in flow. Use the `onTap` callback to open your sign-in UI (redirect or embedded).
+
+### Usage
+
+```dart title="lib/home.dart" showLineNumbers
+import 'package:thunder_flutter/thunder_flutter.dart';
+
+class HomeScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return ThunderSignInButton(
+      onTap: () {
+        // open redirect or embedded sign-in
+      },
+    );
+  }
+}
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `onTap` | `VoidCallback?` | ❌ | Called when the button is tapped. Use this to launch your sign-in flow |
+
+### Base Variant
+
+`BaseThunderSignInButton` renders an unstyled button so you can apply your own design:
+
+```dart
+BaseThunderSignInButton(
+  label: 'Log In',
+  isLoading: false,
+  onTap: () { /* handle tap */ },
+)
+```
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `label` | `String` | ✅ | Button label text |
+| `isLoading` | `bool` | ❌ | Disables the button and shows loading state. Defaults to `false` |
+| `onTap` | `VoidCallback?` | ❌ | Called when tapped |
+
+---
+
+## `ThunderSignOutButton`
+
+Tappable widget that calls `client.signOut()` and refreshes `ThunderProvider` state.
+
+### Usage
+
+```dart
+ThunderSignOutButton(
+  onSignedOut: () {
+    Navigator.pushReplacementNamed(context, '/home');
+  },
+)
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `onSignedOut` | `VoidCallback?` | ❌ | Called after sign-out completes successfully |
+| `onError` | `void Function(Object)?` | ❌ | Called if sign-out fails |
+
+### Base Variant
+
+`BaseThunderSignOutButton` accepts a `builder` for full control:
+
+```dart
+BaseThunderSignOutButton(
+  builder: (context, isLoading, signOut) => ElevatedButton(
+    onPressed: isLoading ? null : signOut,
+    child: Text(isLoading ? 'Signing out…' : 'Sign Out'),
+  ),
+)
+```
+
+---
+
+## `ThunderSignUpButton`
+
+Tappable widget that initiates the sign-up flow. Use `onTap` to open your registration UI.
+
+### Usage
+
+```dart
+ThunderSignUpButton(
+  onTap: () {
+    // open sign-up UI
+  },
+)
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `onTap` | `VoidCallback?` | ❌ | Called when the button is tapped |
+
+### Base Variant
+
+`BaseThunderSignUpButton` accepts the same props as `BaseThunderSignInButton`.

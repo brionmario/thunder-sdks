@@ -1,0 +1,181 @@
+---
+title: Organization Components
+description: Compose components for B2B organization management
+---
+
+# Organization Components
+
+Organization components display and manage the authenticated user's organizations. These are intended for B2B applications where users belong to one or more organizations.
+
+---
+
+## `ThunderOrganization`
+
+Displays the name of the organization the current session is scoped to.
+
+### Usage
+
+```kotlin
+import io.thunder.compose.components.presentation.organization.ThunderOrganization
+
+ThunderOrganization()
+```
+
+### Base Variant
+
+`BaseThunderOrganization` provides the `Organization?` to a custom content lambda:
+
+```kotlin
+BaseThunderOrganization { org ->
+    Text(org?.name ?: "Personal")
+}
+```
+
+---
+
+## `ThunderOrganizationList`
+
+Lists all organizations the authenticated user belongs to.
+
+### Usage
+
+```kotlin
+import io.thunder.compose.components.presentation.organization.ThunderOrganizationList
+
+ThunderOrganizationList(
+    onSelect = { org -> navController.navigate("org/${org.id}") }
+)
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `modifier` | `Modifier` | ❌ | Compose modifier |
+| `onSelect` | `((Organization) -> Unit)?` | ❌ | Called when the user taps an organization |
+
+### Base Variant
+
+`BaseThunderOrganizationList` exposes `(organizations, isLoading, error, onSelect)` to a content lambda:
+
+```kotlin
+BaseThunderOrganizationList { orgs, isLoading, error, select ->
+    if (isLoading) CircularProgressIndicator()
+    else LazyColumn {
+        items(orgs) { org ->
+            Text(org.name, modifier = Modifier.clickable { select(org) })
+        }
+    }
+}
+```
+
+---
+
+## `ThunderOrganizationProfile`
+
+Displays and edits the current organization's name and settings.
+
+### Usage
+
+```kotlin
+import io.thunder.compose.components.presentation.organization.ThunderOrganizationProfile
+
+ThunderOrganizationProfile(
+    onSaved = { /* saved */ },
+    onError = { error -> Log.e("Org", "Save failed", error) }
+)
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `modifier` | `Modifier` | ❌ | Compose modifier |
+| `onSaved` | `(() -> Unit)?` | ❌ | Called after the organization profile is saved |
+| `onError` | `((Throwable) -> Unit)?` | ❌ | Called if save fails |
+
+---
+
+## `ThunderOrganizationSwitcher`
+
+Picker to switch the active session to a different organization via token exchange.
+
+### Usage
+
+```kotlin
+import io.thunder.compose.components.presentation.organization.ThunderOrganizationSwitcher
+
+ThunderOrganizationSwitcher()
+```
+
+### Base Variant
+
+`BaseThunderOrganizationSwitcher` exposes `(organizations, currentOrg, isSwitching, error, switchOrg)`:
+
+```kotlin
+BaseThunderOrganizationSwitcher { orgs, current, isSwitching, error, switchOrg ->
+    Column {
+        error?.let { Text(it, color = Color.Red) }
+        orgs.forEach { org ->
+            Text(
+                org.name,
+                modifier = Modifier.clickable(enabled = !isSwitching) { switchOrg(org) }
+            )
+        }
+    }
+}
+```
+
+---
+
+## `ThunderCreateOrganization`
+
+Form to create a new organization under the authenticated user's account.
+
+### Usage
+
+```kotlin
+import io.thunder.compose.components.presentation.organization.ThunderCreateOrganization
+
+ThunderCreateOrganization(
+    onCreated = { org -> println("Created: ${org.name}") }
+)
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `modifier` | `Modifier` | ❌ | Compose modifier |
+| `onCreated` | `((Organization) -> Unit)?` | ❌ | Called after the organization is created successfully |
+| `onError` | `((Throwable) -> Unit)?` | ❌ | Called if creation fails |
+
+---
+
+## `ThunderLanguageSwitcher`
+
+Picker to switch the active UI locale for SDK component labels.
+
+### Usage
+
+```kotlin
+import io.thunder.compose.components.presentation.organization.ThunderLanguageSwitcher
+
+ThunderLanguageSwitcher()
+```
+
+### Base Variant
+
+`BaseThunderLanguageSwitcher` exposes `(locales, activeLocale, setLocale)`:
+
+```kotlin
+BaseThunderLanguageSwitcher { locales, active, setLocale ->
+    locales.forEach { locale ->
+        Text(
+            locale,
+            fontWeight = if (locale == active) FontWeight.Bold else FontWeight.Normal,
+            modifier = Modifier.clickable { setLocale(locale) }
+        )
+    }
+}
+```

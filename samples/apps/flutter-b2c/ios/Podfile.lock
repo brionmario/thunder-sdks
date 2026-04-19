@@ -1,0 +1,28 @@
+PODS:
+  - Flutter (1.0.0)
+  - Thunder (0.1.0)
+  - thunder_flutter (0.1.0):
+    - Flutter
+    - Thunder (~> 0.1.0)
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - Thunder (from `../../../../tools/sdks/ios`)
+  - thunder_flutter (from `.symlinks/plugins/thunder_flutter/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  Thunder:
+    :path: "../../../../tools/sdks/ios"
+  thunder_flutter:
+    :path: ".symlinks/plugins/thunder_flutter/ios"
+
+SPEC CHECKSUMS:
+  Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
+  Thunder: 30cfb15449bf5eafde8e181cf0a570771b04a1d0
+  thunder_flutter: f663c81952f972ff2759153558fded47682a11db
+
+PODFILE CHECKSUM: c6caeba9c57801840455c220df647824801e77fe
+
+COCOAPODS: 1.16.2

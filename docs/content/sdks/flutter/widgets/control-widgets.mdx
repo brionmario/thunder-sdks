@@ -1,0 +1,122 @@
+---
+title: Control Widgets
+description: Flutter control widgets for conditional rendering based on authentication state
+---
+
+# Control Widgets
+
+Control widgets conditionally render content based on authentication state. All widgets read state from the nearest `ThunderProvider`.
+
+---
+
+## `ThunderSignedIn`
+
+Renders its `child` only when the user is authenticated. Renders `fallback` (or nothing) otherwise.
+
+### Usage
+
+```dart
+import 'package:thunder_flutter/thunder_flutter.dart';
+
+ThunderSignedIn(
+  child: const Text('Welcome back!'),
+  fallback: const Text('Please sign in.'),
+)
+
+// Without fallback — renders nothing when signed out
+ThunderSignedIn(child: const ProfileScreen())
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `child` | `Widget` | ✅ | Shown when signed in |
+| `fallback` | `Widget?` | ❌ | Shown when signed out. Defaults to `SizedBox.shrink()` |
+
+---
+
+## `ThunderSignedOut`
+
+Renders its `child` only when the user is not authenticated.
+
+### Usage
+
+```dart
+ThunderSignedOut(
+  child: ThunderSignInButton(onTap: () { /* launch sign-in */ }),
+)
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `child` | `Widget` | ✅ | Shown when signed out |
+| `fallback` | `Widget?` | ❌ | Shown when signed in. Defaults to `SizedBox.shrink()` |
+
+---
+
+## `ThunderLoading`
+
+Renders its `child` while the SDK is initializing or refreshing authentication state.
+
+### Usage
+
+```dart
+ThunderLoading(
+  child: const CircularProgressIndicator(),
+)
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `child` | `Widget` | ✅ | Shown while loading |
+
+---
+
+## `ThunderCallback`
+
+Handles the OAuth2 redirect callback. Place this widget at the route your app navigates to after a redirect-based sign-in. It exchanges the authorization code in `url` for tokens, then calls `onSuccess` or `onError`.
+
+### Usage
+
+```dart
+import 'package:thunder_flutter/thunder_flutter.dart';
+
+ThunderCallback(
+  url: callbackUrl,
+  onSuccess: (user) {
+    Navigator.pushReplacementNamed(context, '/home');
+  },
+  onError: (error) {
+    Navigator.pushReplacementNamed(context, '/signin');
+  },
+)
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `url` | `String` | ✅ | The full callback URL received from the deep link handler |
+| `onSuccess` | `void Function(User)?` | ❌ | Called after the token exchange completes successfully |
+| `onError` | `void Function(Object)?` | ❌ | Called if the token exchange fails |
+| `loadingIndicator` | `Widget?` | ❌ | Widget shown while the token exchange is in progress |
+
+### Base Variant
+
+`BaseThunderCallback` passes `(context, isLoading, error)` to a custom `builder`:
+
+```dart
+BaseThunderCallback(
+  url: callbackUrl,
+  onSuccess: (user) {},
+  builder: (context, isLoading, error) {
+    if (error != null) return Text('Error: $error');
+    return const CircularProgressIndicator();
+  },
+)
+```

@@ -1,0 +1,112 @@
+---
+title: User Components
+description: SwiftUI components for displaying and managing user profiles
+---
+
+# User Components
+
+User components display authenticated user information and provide profile management.
+
+---
+
+## `ThunderUser`
+
+Read-only display of the authenticated user's display name or username.
+
+### Usage
+
+```swift
+import ThunderSwiftUI
+
+ThunderUser()
+```
+
+### Base Variant
+
+`BaseThunderUser` provides the `User?` object to a custom content builder for full control:
+
+```swift
+BaseThunderUser { user in
+    HStack {
+        Image(systemName: "person.circle")
+        Text(user?.displayName ?? "Guest")
+    }
+}
+```
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `content` | `(User?) -> Content` | ✅ | Builder receiving the current `User?` |
+
+---
+
+## `ThunderUserDropdown`
+
+User menu that shows the authenticated user's name and provides sign-out and profile actions.
+
+### Usage
+
+```swift
+ThunderUserDropdown()
+```
+
+### Base Variant
+
+`BaseThunderUserDropdown` passes state to a custom builder:
+
+```swift
+BaseThunderUserDropdown { user, isLoading, signOut in
+    Menu {
+        Button("Sign Out") { signOut() }
+    } label: {
+        Text(user?.displayName ?? "")
+    }
+}
+```
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `content` | `(User?, Bool, () -> Void) -> Content` | ✅ | Builder receiving `user`, `isLoading`, and `signOut` action |
+
+---
+
+## `ThunderUserProfile`
+
+Editable user profile form. Fetches the current user's SCIM profile on appear and submits updates on save.
+
+### Usage
+
+```swift
+ThunderUserProfile {
+    print("Profile saved")
+} onError: {
+    print("Save failed")
+}
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `onSaved` | `(() -> Void)?` | ❌ | Called after the profile is saved successfully |
+| `onError` | `(() -> Void)?` | ❌ | Called if the save operation fails |
+
+### Base Variant
+
+`BaseThunderUserProfile` provides full control via a content builder:
+
+```swift
+BaseThunderUserProfile(onSaved: {}) { profile, fields, isLoading, error, save in
+    VStack {
+        if let error { Text(error).foregroundColor(.red) }
+        TextField("Display Name", text: fields["displayName"]!)
+        Button("Save", action: save).disabled(isLoading)
+    }
+}
+```
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `onSaved` | `(() -> Void)?` | ❌ | Called after save succeeds |
+| `onError` | `(() -> Void)?` | ❌ | Called if save fails |
+| `content` | `(UserProfile?, [String: Binding<String>], Bool, String?, () -> Void) -> Content` | ✅ | Builder receiving profile, field bindings, loading state, error, and save action |

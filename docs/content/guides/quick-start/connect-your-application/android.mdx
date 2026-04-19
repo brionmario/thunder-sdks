@@ -1,0 +1,315 @@
+---
+title: Android Quickstart
+sidebar_position: 3
+description: Quick start guide to integrate Thunder with an Android application
+---
+
+import {
+  Boxes,
+  Package,
+  LogIn,
+  BookOpen,
+  Clock,
+  Server,
+  Hexagon,
+  FileCode,
+} from '@wso2/oxygen-ui-icons-react';
+
+# Android Quickstart
+
+Welcome to the Android Quickstart guide! In this document, you will learn to build an Android app, add user sign-in, and display user profile information using Thunder.
+
+<TutorialHero>
+
+## What You Will Learn
+
+<TutorialHeroItem icon={<Boxes />}>Create a new Android app with Android Studio</TutorialHeroItem>
+<TutorialHeroItem icon={<Package />}>Install the <code>io.thunder:android</code> SDK</TutorialHeroItem>
+<TutorialHeroItem icon={<LogIn />}>Add user sign-in and sign-out</TutorialHeroItem>
+<TutorialHeroItem icon={<BookOpen />}>Display user profile information</TutorialHeroItem>
+
+## Prerequisites
+
+<TutorialHeroItem icon={<Clock />}>About 20 minutes</TutorialHeroItem>
+<TutorialHeroItem icon={<Server />}>Thunder running locally or on a server</TutorialHeroItem>
+<TutorialHeroItem icon={<Hexagon />}>Android Studio Hedgehog (2023.1.1) or later</TutorialHeroItem>
+<TutorialHeroItem icon={<Package />}>Android SDK with minSdk 26+</TutorialHeroItem>
+<TutorialHeroItem icon={<FileCode />}>Basic familiarity with Kotlin and Coroutines</TutorialHeroItem>
+
+</TutorialHero>
+
+<Stepper stepNode="h2" as="h2">
+
+## Create an Application in Thunder
+
+Before integrating Thunder with your Android app, you need to create an application in Thunder.
+
+### Using the Thunder Console
+
+1. Sign into the Thunder Console at [https://localhost:8090/console](https://localhost:8090/console)
+2. Navigate to **Applications** → **New Application**
+3. Provide the following details:
+   - **Name**: `my-android-app`
+   - **Type**: Mobile Application
+   - **Authorized Redirect URL**: `myapp://callback`
+
+:::info
+The authorized redirect URL is a custom URI scheme that Android uses to return the user to your app after sign-in. You will register `myapp://callback` as a deep link in your app's `AndroidManifest.xml` in a later step.
+:::
+
+### Using the Thunder API
+
+Alternatively, you can create an application using the Thunder API. First, [obtain a system API token](/guides/quick-start/get-thunder#obtain-system-api-token), then:
+
+```bash
+curl -kL -X POST https://localhost:8090/applications \
+  -H 'Authorization: Bearer <your-system-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "my-android-app",
+    "inboundAuthConfig": [{
+      "type": "oauth2",
+      "config": {
+        "grantTypes": ["authorization_code", "refresh_token"],
+        "responseTypes": ["code"],
+        "redirectUris": ["myapp://callback"],
+        "tokenEndpointAuthMethod": "none",
+        "publicClient": true,
+        "pkceRequired": true
+      }
+    }]
+  }'
+```
+
+:::warning Important
+Note down the **Client ID** and **Application ID** from the response. You will need them to configure the Thunder SDK.
+:::
+
+## Create an Android App
+
+Open Android Studio and create a new project:
+
+1. Select **New Project** → **Empty Views Activity**
+2. Configure your project:
+   - **Name**: `MyAndroidApp`
+   - **Package name**: `com.example.myandroidapp`
+   - **Language**: Kotlin
+   - **Minimum SDK**: API 26 (Android 8.0)
+3. Click **Finish** and wait for the project to sync
+
+## Install the Thunder Android SDK
+
+Open your app-level `build.gradle.kts` and add the Thunder SDK dependency:
+
+```kotlin title="app/build.gradle.kts" showLineNumbers
+dependencies {
+    implementation("io.thunder:android:0.1.0")
+
+    // Required for redirect-based sign-in
+    implementation("androidx.browser:browser:1.8.0")
+}
+```
+
+Sync the project when prompted.
+
+## Configure the Thunder SDK
+
+Create a custom `Application` class to initialize the Thunder SDK at startup.
+
+Create a new Kotlin file `ThunderApp.kt`:
+
+```kotlin title="app/src/main/java/com/example/myandroidapp/ThunderApp.kt" showLineNumbers
+package com.example.myandroidapp
+
+import android.app.Application
+import io.thunder.android.EncryptedStorageAdapter
+import io.thunder.android.ThunderClient
+import io.thunder.android.ThunderConfig
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+class ThunderApp : Application() {
+
+    companion object {
+        lateinit var thunder: ThunderClient
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        thunder = ThunderClient()
+        CoroutineScope(Dispatchers.IO).launch {
+            thunder.initialize(
+                config = ThunderConfig(
+                    baseUrl = "https://localhost:8090",
+                    clientId = "<your-client-id>",
+                    applicationId = "<your-application-id>",
+                    afterSignInUrl = "myapp://callback",
+                    afterSignOutUrl = "myapp://",
+                ),
+                storage = EncryptedStorageAdapter(applicationContext)
+            )
+        }
+    }
+}
+```
+
+Register the custom Application class in your `AndroidManifest.xml`:
+
+```xml title="app/src/main/AndroidManifest.xml" showLineNumbers
+<application
+    android:name=".ThunderApp"
+    ... >
+```
+
+:::warning Configuration
+Replace `<your-client-id>` and `<your-application-id>` with the values obtained when creating the application in Thunder.
+:::
+
+### Configuration Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `baseUrl` | Your Thunder instance URL (for example, `https://localhost:8090`) |
+| `clientId` | The Client ID from your Thunder application |
+| `applicationId` | The Application ID from your Thunder application |
+| `afterSignInUrl` | The deep link URI to return to after sign-in |
+| `afterSignOutUrl` | The URI to navigate to after sign-out |
+
+## Choose How Users Will Sign In
+
+The Thunder Android SDK supports two sign-in approaches. Choose the one that best fits your application.
+
+### Option A: Redirect to Thunder
+
+In redirect mode, the SDK opens Thunder's hosted sign-in page in a Chrome Custom Tab. This is the recommended approach as it supports all authentication methods configured in Thunder.
+
+**Step 1: Register a deep link in `AndroidManifest.xml`**
+
+Add an `intent-filter` to your main activity so Android routes the callback URL back to your app:
+
+```xml title="app/src/main/AndroidManifest.xml" showLineNumbers
+<activity android:name=".MainActivity" ... >
+    <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="myapp" android:host="callback" />
+    </intent-filter>
+</activity>
+```
+
+**Step 2: Launch the sign-in URL**
+
+```kotlin title="app/src/main/java/com/example/myandroidapp/MainActivity.kt" showLineNumbers
+import androidx.browser.customtabs.CustomTabsIntent
+import android.net.Uri
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+
+fun signIn() {
+    CoroutineScope(Dispatchers.Main).launch {
+        val signInUrl = ThunderApp.thunder.buildSignInUrl()
+        val customTab = CustomTabsIntent.Builder().build()
+        customTab.launchUrl(this@MainActivity, Uri.parse(signInUrl))
+    }
+}
+```
+
+**Step 3: Handle the callback**
+
+Override `onNewIntent` to process the redirect callback:
+
+```kotlin title="app/src/main/java/com/example/myandroidapp/MainActivity.kt" showLineNumbers
+override fun onNewIntent(intent: Intent) {
+    super.onNewIntent(intent)
+    val callbackUrl = intent.data?.toString() ?: return
+    if (callbackUrl.startsWith("myapp://callback")) {
+        CoroutineScope(Dispatchers.Main).launch {
+            val user = ThunderApp.thunder.handleRedirectCallback(callbackUrl)
+            // Update your UI with the signed-in user
+        }
+    }
+}
+```
+
+### Option B: Embedded Sign-In
+
+In embedded mode, users enter their credentials directly in your app without any browser redirect. This gives you full control over the sign-in UI.
+
+**Step 1: Initiate the sign-in flow**
+
+```kotlin title="app/src/main/java/com/example/myandroidapp/MainActivity.kt" showLineNumbers
+import io.thunder.android.EmbeddedFlowRequestConfig
+import io.thunder.android.EmbeddedSignInPayload
+import io.thunder.android.FlowStatus
+
+suspend fun signInWithCredentials(username: String, password: String) {
+    // Step 1: Initiate the flow
+    val initResponse = ThunderApp.thunder.signIn(
+        payload = EmbeddedSignInPayload(actionId = "init"),
+        request = EmbeddedFlowRequestConfig(applicationId = "<your-application-id>")
+    )
+
+    // Step 2: Submit credentials
+    val result = ThunderApp.thunder.signIn(
+        payload = EmbeddedSignInPayload(
+            flowId = initResponse.flowId,
+            actionId = "basic_auth",
+            inputs = mapOf(
+                "username" to username,
+                "password" to password
+            )
+        ),
+        request = EmbeddedFlowRequestConfig(applicationId = "<your-application-id>")
+    )
+
+    if (result.flowStatus == FlowStatus.COMPLETE) {
+        val user = ThunderApp.thunder.getUser()
+        // Update your UI with the signed-in user
+    }
+}
+```
+
+## Display User Profile
+
+After sign-in, retrieve and display the authenticated user's profile:
+
+```kotlin title="app/src/main/java/com/example/myandroidapp/MainActivity.kt" showLineNumbers
+import io.thunder.android.User
+
+suspend fun loadUserProfile() {
+    if (ThunderApp.thunder.isSignedIn()) {
+        val user: User = ThunderApp.thunder.getUser()
+        runOnUiThread {
+            welcomeText.text = "Welcome, ${user.displayName ?: user.username}!"
+            emailText.text = user.email
+        }
+    }
+}
+```
+
+To sign out the current user:
+
+```kotlin
+suspend fun signOut() {
+    ThunderApp.thunder.signOut()
+    // Navigate to sign-in screen
+}
+```
+
+## Run Your App
+
+1. Connect an Android device or start an emulator
+2. Click **Run 'app'** in Android Studio, or run from the command line:
+
+```bash
+./gradlew installDebug
+```
+
+:::tip Success
+You should now see your app with a sign-in button. Tap it to authenticate with Thunder!
+:::
+
+</Stepper>

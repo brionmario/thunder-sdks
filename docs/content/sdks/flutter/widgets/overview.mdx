@@ -1,0 +1,71 @@
+---
+title: Widgets Overview
+description: Pre-built Flutter widgets for Thunder authentication
+---
+
+# Widgets
+
+The `thunder_flutter` package includes a complete set of pre-built widgets for Thunder authentication and user management. Widgets are available as soon as you install the package — no additional dependency is needed.
+
+## Setup
+
+Wrap your root widget with [`ThunderProvider`](/sdks/flutter/apis/thunder-provider) to make authentication state available to all widgets in the tree:
+
+```dart title="lib/main.dart" showLineNumbers
+import 'package:thunder_flutter/thunder_flutter.dart';
+
+void main() {
+  runApp(
+    ThunderProvider(
+      config: ThunderConfig(
+        baseUrl: 'https://localhost:8090',
+        clientId: '<your-client-id>',
+        applicationId: '<your-application-id>',
+      ),
+      child: const MyApp(),
+    ),
+  );
+}
+```
+
+## Widgets
+
+### Action Widgets
+
+| Widget | Description |
+| :--- | :--- |
+| [`ThunderSignInButton`](/sdks/flutter/widgets/action-widgets#thundersigninbutton) | Tappable button that triggers the sign-in flow |
+| [`ThunderSignOutButton`](/sdks/flutter/widgets/action-widgets#thundersignoutbutton) | Tappable button that signs the current user out |
+| [`ThunderSignUpButton`](/sdks/flutter/widgets/action-widgets#thundersignupbutton) | Tappable button that triggers the sign-up flow |
+
+### Control Widgets
+
+| Widget | Description |
+| :--- | :--- |
+| [`ThunderSignedIn`](/sdks/flutter/widgets/control-widgets#thundersignedin) | Renders a child only when the user is authenticated |
+| [`ThunderSignedOut`](/sdks/flutter/widgets/control-widgets#thundersignedout) | Renders a child only when the user is not authenticated |
+| [`ThunderLoading`](/sdks/flutter/widgets/control-widgets#thunderloading) | Renders a child while authentication state is loading |
+| [`ThunderCallback`](/sdks/flutter/widgets/control-widgets#thundercallback) | Handles the OAuth2 redirect callback URL |
+
+### User Widgets
+
+| Widget | Description |
+| :--- | :--- |
+| [`ThunderUser`](/sdks/flutter/widgets/user-widgets#thunderuser) | Displays the authenticated user's name |
+| [`ThunderUserDropdown`](/sdks/flutter/widgets/user-widgets#thunderuserdropdown) | User menu with profile and sign-out actions |
+| [`ThunderUserProfile`](/sdks/flutter/widgets/user-widgets#thunderuserprofile) | Editable user profile form |
+
+### Organization Widgets
+
+| Widget | Description |
+| :--- | :--- |
+| [`ThunderOrganization`](/sdks/flutter/widgets/organization-widgets#thunderorganization) | Displays the current organization name |
+| [`ThunderOrganizationList`](/sdks/flutter/widgets/organization-widgets#thunderorganizationlist) | Lists the user's organizations |
+| [`ThunderOrganizationProfile`](/sdks/flutter/widgets/organization-widgets#thunderorganizationprofile) | Displays and edits the current organization |
+| [`ThunderOrganizationSwitcher`](/sdks/flutter/widgets/organization-widgets#thunderorganizationswitcher) | Picker to switch the active organization |
+| [`ThunderCreateOrganization`](/sdks/flutter/widgets/organization-widgets#thundercreateorganization) | Form to create a new organization |
+| [`ThunderLanguageSwitcher`](/sdks/flutter/widgets/organization-widgets#thunderlanguageswitcher) | Picker to switch the active UI locale |
+
+## Base Variants
+
+Every widget ships with an unstyled `Base` variant (for example, `BaseThunderSignInButton`) that accepts a custom `builder` or `child`. Use the base variant when you need full control over appearance.

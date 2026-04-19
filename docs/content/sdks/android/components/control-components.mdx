@@ -1,0 +1,125 @@
+---
+title: Control Components
+description: Compose control components for conditional rendering based on authentication state
+---
+
+# Control Components
+
+Control components conditionally render content based on authentication state. All composables read `ThunderState` from `LocalThunder`.
+
+---
+
+## `ThunderSignedIn`
+
+Renders its content only when the user is authenticated. Renders the fallback (or nothing) otherwise.
+
+### Usage
+
+```kotlin
+import io.thunder.compose.components.guards.ThunderSignedIn
+
+ThunderSignedIn(
+    fallback = { Text("Please sign in.") }
+) {
+    Text("Welcome back!")
+}
+
+// Without fallback — renders nothing when signed out
+ThunderSignedIn {
+    ProfileScreen()
+}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `content` | `@Composable () -> Unit` | ✅ | Shown when signed in |
+| `fallback` | `@Composable () -> Unit` | ❌ | Shown when signed out. Defaults to empty |
+
+---
+
+## `ThunderSignedOut`
+
+Renders its content only when the user is not authenticated.
+
+### Usage
+
+```kotlin
+import io.thunder.compose.components.guards.ThunderSignedOut
+
+ThunderSignedOut {
+    ThunderSignInButton { /* launch sign-in */ }
+}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `content` | `@Composable () -> Unit` | ✅ | Shown when signed out |
+| `fallback` | `@Composable () -> Unit` | ❌ | Shown when signed in. Defaults to empty |
+
+---
+
+## `ThunderLoading`
+
+Renders its content while the SDK is initializing or refreshing authentication state.
+
+### Usage
+
+```kotlin
+import io.thunder.compose.components.guards.ThunderLoading
+
+ThunderLoading {
+    CircularProgressIndicator()
+}
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `content` | `@Composable () -> Unit` | ✅ | Shown while loading |
+
+---
+
+## `ThunderCallback`
+
+Handles the OAuth2 redirect callback. Use this composable at the screen your app navigates to after a redirect-based sign-in. It exchanges the authorization code for tokens and calls `onSuccess` or `onError`.
+
+### Usage
+
+```kotlin
+import io.thunder.compose.components.flow.ThunderCallback
+
+ThunderCallback(
+    url = callbackUrl,
+    onSuccess = { user ->
+        navController.navigate("home")
+    },
+    onError = { error ->
+        Log.e("Auth", "Callback failed", error)
+    }
+)
+```
+
+### Parameters
+
+| Parameter | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `url` | `String` | ✅ | The full callback URL received from the deep link |
+| `onSuccess` | `((User) -> Unit)?` | ❌ | Called after the token exchange completes successfully |
+| `onError` | `((Throwable) -> Unit)?` | ❌ | Called if the token exchange fails |
+| `modifier` | `Modifier` | ❌ | Compose modifier |
+
+### Base Variant
+
+`BaseThunderCallback` exposes `(isLoading, error)` to a custom content lambda:
+
+```kotlin
+BaseThunderCallback(url = callbackUrl, onSuccess = {}) { isLoading, error ->
+    if (error != null) Text("Sign-in failed: ${error.message}")
+    else CircularProgressIndicator()
+}
+```

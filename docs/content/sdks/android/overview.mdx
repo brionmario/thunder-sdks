@@ -1,0 +1,73 @@
+---
+title: Android SDK Overview
+sidebar_position: 1
+sidebar_label: Overview
+description: Thunder Android SDK for native authentication in Kotlin applications
+---
+
+# Android SDK
+
+The Thunder Android SDK (`io.thunder:android`) provides a complete set of APIs to integrate Thunder authentication and user management into your native Android applications. It is written in Kotlin and built on top of Kotlin Coroutines.
+
+## Installation
+
+Add the SDK to your app-level `build.gradle.kts`:
+
+```kotlin title="app/build.gradle.kts"
+dependencies {
+    implementation("io.thunder:android:0.1.0")
+}
+```
+
+## Getting Started
+
+To get started quickly, check out the [Android Quickstart Guide](/guides/quick-start/connect-your-application/android) for step-by-step instructions.
+
+## Features
+
+### Authentication
+
+The SDK supports two sign-in approaches:
+
+- **Redirect mode** — Opens Thunder's hosted sign-in page in a Chrome Custom Tab using [`buildSignInUrl()`](/sdks/android/apis/thunder-client#buildsigninurl) and handles the callback with [`handleRedirectCallback()`](/sdks/android/apis/thunder-client#handleredirectcallback)
+- **Embedded mode** — Drives a fully app-native sign-in flow via the Flow Execution API using [`signIn()`](/sdks/android/apis/thunder-client#signin), keeping users entirely within your app
+
+### Token Management
+
+The SDK handles token lifecycle automatically:
+
+- Transparent token refresh before expiry
+- Encrypted token storage via `EncryptedStorageAdapter`
+- ID token validation (issuer, expiry, clock skew)
+- Token exchange for organization switching (RFC 8693)
+
+### User & Profile Management
+
+- [`getUser()`](/sdks/android/apis/thunder-client#getuser) — Fetch verified user claims from the `/userinfo` endpoint
+- [`getUserProfile()`](/sdks/android/apis/thunder-client#getuserprofile) — Fetch the full SCIM user profile
+- [`updateUserProfile()`](/sdks/android/apis/thunder-client#updateuserprofile) — Update user profile attributes
+
+### Organizations (B2B)
+
+- List all organizations or the user's memberships
+- Create organizations and invite users
+- Switch the active session to a different organization
+
+## API Reference
+
+- **[`ThunderConfig`](/sdks/android/apis/thunder-config)** — SDK configuration options
+- **[`ThunderClient`](/sdks/android/apis/thunder-client)** — Main SDK client with all authentication and management methods
+
+## Jetpack Compose Components
+
+The `io.thunder:compose` package provides pre-built Jetpack Compose composables that sit on top of the `io.thunder:android` core SDK. Install it as a secondary package when you want drop-in UI components.
+
+- **[Components Overview](/sdks/android/components/overview)** — Installation and full component list
+- **[Action Components](/sdks/android/components/action-components)** — `ThunderSignInButton`, `ThunderSignOutButton`, `ThunderSignUpButton`
+- **[Control Components](/sdks/android/components/control-components)** — `ThunderSignedIn`, `ThunderSignedOut`, `ThunderLoading`, `ThunderCallback`
+- **[User Components](/sdks/android/components/user-components)** — `ThunderUser`, `ThunderUserDropdown`, `ThunderUserProfile`
+- **[Organization Components](/sdks/android/components/organization-components)** — `ThunderOrganizationSwitcher` and B2B helpers
+
+## Error Handling
+
+All suspend methods throw `IAMException` on failure. See [`ThunderClient` — Error Handling](/sdks/android/apis/thunder-client#error-handling) for the full list of error codes.

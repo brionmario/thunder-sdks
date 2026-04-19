@@ -1,0 +1,79 @@
+---
+title: ThunderConfig
+description: Configuration options for the Thunder Android SDK
+---
+
+# `ThunderConfig`
+
+`ThunderConfig` is the configuration data class for the Thunder Android SDK. Pass an instance to [`ThunderClient.initialize()`](/sdks/android/apis/thunder-client#initialize) to configure the SDK.
+
+## Usage
+
+```kotlin title="ThunderApp.kt" showLineNumbers
+val config = ThunderConfig(
+    baseUrl = "https://localhost:8090",
+    clientId = "<your-client-id>",
+    applicationId = "<your-application-id>",
+    afterSignInUrl = "myapp://callback",
+    afterSignOutUrl = "myapp://",
+    scopes = listOf("openid", "profile", "email")
+)
+```
+
+## Properties
+
+| Property | Type | Required | Default | Description |
+| :--- | :--- | :---: | :--- | :--- |
+| `baseUrl` | `String` | ✅ | — | Base URL of your Thunder instance (must use HTTPS) |
+| `clientId` | `String?` | ❌ | `null` | Client ID of your Thunder application. Required for redirect-based sign-in |
+| `applicationId` | `String?` | ❌ | `null` | Application ID of your Thunder application. Required for embedded sign-in |
+| `afterSignInUrl` | `String?` | ❌ | `null` | URI to redirect to after a successful sign-in (for example, `myapp://callback`) |
+| `afterSignOutUrl` | `String?` | ❌ | `null` | URI to navigate to after sign-out |
+| `signInUrl` | `String?` | ❌ | `null` | Custom sign-in page URL. Overrides the default Thunder sign-in URL |
+| `signUpUrl` | `String?` | ❌ | `null` | Custom sign-up page URL |
+| `scopes` | `List<String>` | ❌ | `["openid"]` | OAuth2 scopes to request during sign-in |
+| `clientSecret` | `String?` | ❌ | `null` | Client secret. Only required for confidential clients |
+| `signInOptions` | `Map<String, Any>` | ❌ | `{}` | Additional parameters appended to the authorization request |
+| `signOutOptions` | `Map<String, Any>` | ❌ | `{}` | Additional parameters for the sign-out request |
+| `signUpOptions` | `Map<String, Any>` | ❌ | `{}` | Additional parameters for the sign-up request |
+| `organizationHandle` | `String?` | ❌ | `null` | Organization handle to scope the session at initialization |
+| `tokenValidation` | `TokenValidationConfig` | ❌ | See below | Token validation settings |
+| `storage` | `StorageAdapter?` | ❌ | `null` | Custom storage adapter. If `null`, you must pass one to `initialize()`. Use `EncryptedStorageAdapter(context)` in production |
+| `instanceId` | `Int?` | ❌ | `null` | Optional identifier for multi-instance SDK setups |
+
+## TokenValidationConfig
+
+Controls how the SDK validates ID tokens received from Thunder.
+
+```kotlin
+val config = ThunderConfig(
+    baseUrl = "https://localhost:8090",
+    tokenValidation = TokenValidationConfig(
+        validate = true,
+        validateIssuer = true,
+        clockTolerance = 60
+    )
+)
+```
+
+| Property | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `validate` | `Boolean` | `true` | Whether to validate ID tokens. Set to `false` only in development |
+| `validateIssuer` | `Boolean` | `true` | Whether to validate the `iss` claim against `baseUrl` |
+| `clockTolerance` | `Int` | `0` | Allowed clock skew in seconds when checking `exp` and `iat` claims |
+
+## StorageAdapter
+
+`StorageAdapter` is an interface for custom token storage. The SDK ships with `EncryptedStorageAdapter` which uses Android's `EncryptedSharedPreferences`. Implement the interface if you need a custom storage backend.
+
+```kotlin
+interface StorageAdapter {
+    suspend fun get(key: String): String?
+    suspend fun set(key: String, value: String)
+    suspend fun remove(key: String)
+}
+```
+
+:::warning
+Always use `EncryptedStorageAdapter(context)` in production. Passing `null` to `initialize()` without also setting `storage` in `ThunderConfig` will throw `IAMException(INVALID_CONFIGURATION)`.
+:::

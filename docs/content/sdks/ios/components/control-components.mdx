@@ -1,0 +1,118 @@
+---
+title: Control Components
+description: SwiftUI control components for conditional rendering based on authentication state
+---
+
+# Control Components
+
+Control components conditionally render content based on authentication state. All components read `ThunderState` from the SwiftUI environment.
+
+---
+
+## `ThunderSignedIn`
+
+Renders its content only when the user is authenticated. Renders the fallback (or nothing) otherwise.
+
+### Usage
+
+```swift
+import ThunderSwiftUI
+
+ThunderSignedIn {
+    Text("Welcome back!")
+} fallback: {
+    Text("Please sign in.")
+}
+
+// Without fallback — renders nothing when signed out
+ThunderSignedIn {
+    ProfileView()
+}
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `content` | `() -> Content` | ✅ | View shown when signed in |
+| `fallback` | `() -> Fallback` | ❌ | View shown when signed out. Defaults to `EmptyView` |
+
+---
+
+## `ThunderSignedOut`
+
+Renders its content only when the user is not authenticated.
+
+### Usage
+
+```swift
+ThunderSignedOut {
+    ThunderSignInButton { /* launch sign-in */ }
+}
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `content` | `() -> Content` | ✅ | View shown when signed out |
+| `fallback` | `() -> Fallback` | ❌ | View shown when signed in. Defaults to `EmptyView` |
+
+---
+
+## `ThunderLoading`
+
+Renders its content while the SDK is initializing or refreshing authentication state.
+
+### Usage
+
+```swift
+ThunderLoading {
+    ProgressView("Loading…")
+}
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `content` | `() -> Content` | ✅ | View shown while loading |
+
+---
+
+## `ThunderCallback`
+
+Handles the OAuth2 redirect callback. Place this view at the route your app navigates to after a redirect-based sign-in. It exchanges the authorization code for tokens and calls `onSuccess` or `onError`.
+
+### Usage
+
+```swift
+// In your redirect handler, e.g. inside .onOpenURL
+ThunderCallback(url: callbackUrl) { user in
+    // navigate to home
+} onError: { error in
+    // show error
+}
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `url` | `String` | ✅ | The full callback URL received from the redirect |
+| `onSuccess` | `((User) -> Void)?` | ❌ | Called after the token exchange completes successfully |
+| `onError` | `((Error) -> Void)?` | ❌ | Called if the token exchange fails |
+
+### Base Variant
+
+`BaseThunderCallback` passes `(isLoading, error)` to a custom content builder:
+
+```swift
+BaseThunderCallback(url: callbackUrl, onSuccess: { _ in }) { isLoading, error in
+    if let error {
+        Text("Sign-in failed: \(error.localizedDescription)")
+    } else {
+        ProgressView()
+    }
+}
+```

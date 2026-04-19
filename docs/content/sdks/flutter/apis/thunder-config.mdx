@@ -1,0 +1,97 @@
+---
+title: ThunderConfig
+description: Configuration options for the Thunder Flutter SDK
+---
+
+# `ThunderConfig`
+
+`ThunderConfig` holds the configuration for the Thunder Flutter SDK. Pass an instance to [`ThunderProvider`](/sdks/flutter/apis/thunder-provider) or directly to [`ThunderClient.initialize()`](/sdks/flutter/apis/thunder-client#initialize).
+
+## Usage
+
+```dart title="lib/main.dart" showLineNumbers
+ThunderProvider(
+  config: ThunderConfig(
+    baseUrl: 'https://localhost:8090',
+    clientId: '<your-client-id>',
+    applicationId: '<your-application-id>',
+    afterSignInUrl: 'myapp://callback',
+    afterSignOutUrl: 'myapp://',
+    scopes: ['openid', 'profile', 'email'],
+  ),
+  child: const MyApp(),
+)
+```
+
+## Properties
+
+| Property | Type | Required | Default | Description |
+| :--- | :--- | :---: | :--- | :--- |
+| `baseUrl` | `String` | ✅ | — | Base URL of your Thunder instance (must use HTTPS) |
+| `clientId` | `String?` | ❌ | `null` | Client ID of your Thunder application. Required for redirect-based sign-in |
+| `applicationId` | `String?` | ❌ | `null` | Application ID of your Thunder application. Required for embedded sign-in |
+| `afterSignInUrl` | `String?` | ❌ | `null` | URI to redirect to after a successful sign-in (for example, `myapp://callback`) |
+| `afterSignOutUrl` | `String?` | ❌ | `null` | URI to navigate to after sign-out |
+| `signInUrl` | `String?` | ❌ | `null` | Custom sign-in page URL. Overrides the default Thunder sign-in URL |
+| `signUpUrl` | `String?` | ❌ | `null` | Custom sign-up page URL |
+| `scopes` | `List<String>` | ❌ | `['openid']` | OAuth2 scopes to request during sign-in |
+| `signInOptions` | `Map<String, dynamic>` | ❌ | `{}` | Additional parameters appended to the authorization request |
+| `signOutOptions` | `Map<String, dynamic>` | ❌ | `{}` | Additional parameters for the sign-out request |
+| `signUpOptions` | `Map<String, dynamic>` | ❌ | `{}` | Additional parameters for the sign-up request |
+| `organizationHandle` | `String?` | ❌ | `null` | Organization handle to scope the session at initialization |
+| `tokenValidation` | `TokenValidationConfig` | ❌ | See below | Token validation settings |
+| `preferences` | `ThunderPreferences?` | ❌ | `null` | UI preferences for theme and internationalization |
+
+## TokenValidationConfig
+
+Controls how the native SDK validates ID tokens received from Thunder.
+
+```dart
+ThunderConfig(
+  baseUrl: 'https://localhost:8090',
+  tokenValidation: const TokenValidationConfig(
+    validate: true,
+    validateIssuer: true,
+    clockTolerance: 60,
+  ),
+)
+```
+
+| Property | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `validate` | `bool` | `true` | Whether to validate ID tokens. Set to `false` only in development |
+| `validateIssuer` | `bool` | `true` | Whether to validate the `iss` claim against `baseUrl` |
+| `clockTolerance` | `int` | `0` | Allowed clock skew in seconds when checking `exp` and `iat` claims |
+
+## ThunderPreferences
+
+`ThunderPreferences` configures optional UI customization for theme and internationalization. These settings are passed to the native platform SDK and apply to any Thunder-hosted UI elements.
+
+```dart
+ThunderConfig(
+  baseUrl: 'https://localhost:8090',
+  preferences: ThunderPreferences(
+    theme: ThunderThemePreferences(
+      mode: ThunderThemeMode.dark,
+    ),
+    i18n: ThunderI18nPreferences(
+      language: 'fr-FR',
+      fallbackLanguage: 'en-US',
+    ),
+  ),
+)
+```
+
+### ThunderThemePreferences
+
+| Property | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `mode` | `ThunderThemeMode` | `ThunderThemeMode.system` | Theme mode: `light`, `dark`, or `system` (follows device setting) |
+
+### ThunderI18nPreferences
+
+| Property | Type | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `language` | `String?` | Device default | BCP 47 language code for UI text (for example, `'en-US'`, `'fr-FR'`) |
+| `fallbackLanguage` | `String?` | `'en-US'` | Fallback language when translations are not available |
+| `bundles` | `Map<String, Map<String, String>>?` | `null` | Custom translation overrides keyed by locale |

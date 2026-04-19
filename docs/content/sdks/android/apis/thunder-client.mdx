@@ -1,0 +1,451 @@
+---
+title: ThunderClient
+description: Main client class for the Thunder Android SDK
+---
+
+# `ThunderClient`
+
+`ThunderClient` is the main entry point for all Thunder authentication and user management operations in the Android SDK. All methods are `suspend fun` (Kotlin Coroutines), except `isLoading()` and `clearSession()`.
+
+## Usage
+
+```kotlin
+val client = ThunderClient()
+client.initialize(
+    config = ThunderConfig(
+        baseUrl = "https://localhost:8090",
+        clientId = "<your-client-id>",
+        applicationId = "<your-application-id>"
+    ),
+    storage = EncryptedStorageAdapter(context)
+)
+```
+
+---
+
+## Lifecycle
+
+### `initialize`
+
+```kotlin
+suspend fun initialize(config: ThunderConfig, storage: StorageAdapter? = null): Boolean
+```
+
+Initializes the SDK with the provided configuration. Must be called once before any other method.
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `config` | `ThunderConfig` | SDK configuration |
+| `storage` | `StorageAdapter?` | Token storage adapter. Defaults to `config.storage`. An `EncryptedStorageAdapter(context)` is required in production |
+
+**Returns:** `true` when initialization succeeds.
+
+**Throws:** `IAMException(ALREADY_INITIALIZED)` if called more than once. `IAMException(INVALID_CONFIGURATION)` if no storage adapter is provided.
+
+---
+
+### `reInitialize`
+
+```kotlin
+suspend fun reInitialize(baseUrl: String? = null, clientId: String? = null): Boolean
+```
+
+Updates one or more configuration fields and re-initializes the SDK without discarding the existing storage adapter.
+
+**Returns:** `true` when re-initialization succeeds.
+
+---
+
+### `getConfiguration`
+
+```kotlin
+fun getConfiguration(): ThunderConfig
+```
+
+Returns the current configuration. **Synchronous.**
+
+**Throws:** `IAMException(SDK_NOT_INITIALIZED)` if the SDK has not been initialized.
+
+---
+
+## Authentication
+
+### `signIn`
+
+```kotlin
+suspend fun signIn(payload: EmbeddedSignInPayload, request: EmbeddedFlowRequestConfig): EmbeddedFlowResponse
+```
+
+Drives an app-native sign-in via the Flow Execution API. Call this in a loop, passing the `flowId` from the previous response, until `flowStatus == FlowStatus.COMPLETE`.
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `payload` | `EmbeddedSignInPayload` | Flow payload. Set `actionId = "init"` to start a new flow |
+| `request` | `EmbeddedFlowRequestConfig` | Flow request configuration including `applicationId` |
+
+**Returns:** `EmbeddedFlowResponse` containing `flowId`, `flowStatus`, and step data.
+
+**Example:**
+
+```kotlin
+// Step 1: Initiate
+val init = client.signIn(
+    payload = EmbeddedSignInPayload(actionId = "init"),
+    request = EmbeddedFlowRequestConfig(applicationId = "your-app-id")
+)
+
+// Step 2: Submit credentials
+val result = client.signIn(
+    payload = EmbeddedSignInPayload(
+        flowId = init.flowId,
+        actionId = "basic_auth",
+        inputs = mapOf("username" to "user@example.com", "password" to "secret")
+    ),
+    request = EmbeddedFlowRequestConfig(applicationId = "your-app-id")
+)
+
+if (result.flowStatus == FlowStatus.COMPLETE) {
+    val user = client.getUser()
+}
+```
+
+---
+
+### `buildSignInUrl`
+
+```kotlin
+fun buildSignInUrl(options: SignInOptions? = null): String
+```
+
+Builds and returns the OAuth2 authorization URL for redirect-based sign-in. Open this URL in a `CustomTabsIntent`. **Synchronous.**
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `options` | `SignInOptions?` | Optional parameters such as `prompt`, `loginHint`, and `fidp` |
+
+**Returns:** The full authorization URL string with PKCE challenge included.
+
+**Throws:** `IAMException(INVALID_CONFIGURATION)` if `clientId` is not set.
+
+---
+
+### `handleRedirectCallback`
+
+```kotlin
+suspend fun handleRedirectCallback(url: String): User
+```
+
+Exchanges the authorization code in the callback URL for tokens and returns the signed-in user.
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `url` | `String` | The full callback URL received from the `intent-filter` deep link |
+
+**Returns:** The authenticated `User` object.
+
+---
+
+### `signOut`
+
+```kotlin
+suspend fun signOut(options: SignOutOptions? = null): String
+```
+
+Revokes the refresh token server-side and clears all local session state.
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `options` | `SignOutOptions?` | Optional sign-out parameters such as `idTokenHint` |
+
+**Returns:** The `afterSignOutUrl` from configuration, or `"/"` if not set.
+
+---
+
+### `isSignedIn`
+
+```kotlin
+suspend fun isSignedIn(): Boolean
+```
+
+Returns `true` if a valid access token is stored in the current session.
+
+---
+
+### `isLoading`
+
+```kotlin
+fun isLoading(): Boolean
+```
+
+Returns `true` while the SDK is mid-initialization or mid-token-refresh. **Synchronous** — safe to call from any thread.
+
+---
+
+## Registration
+
+### `signUp`
+
+```kotlin
+suspend fun signUp(
+    payload: EmbeddedSignInPayload? = null,
+    request: EmbeddedFlowRequestConfig? = null
+): EmbeddedFlowResponse
+```
+
+Drives an app-native user registration via the Flow Execution API. Follows the same loop pattern as `signIn()`.
+
+---
+
+## Token & Session
+
+### `getAccessToken`
+
+```kotlin
+suspend fun getAccessToken(): String
+```
+
+Returns the current access token, transparently refreshing it if it is near expiry.
+
+**Throws:** `IAMException(SESSION_EXPIRED)` if no valid session exists and the token cannot be refreshed.
+
+---
+
+### `decodeJwtToken`
+
+```kotlin
+fun decodeJwtToken(token: String): Map<String, Any?>
+```
+
+Decodes the payload of a JWT without verifying the signature. **Synchronous.**
+
+:::warning
+Do not use this method for authorization decisions. Always validate tokens server-side.
+:::
+
+---
+
+### `exchangeToken`
+
+```kotlin
+suspend fun exchangeToken(config: TokenExchangeRequestConfig): TokenResponse
+```
+
+Performs an RFC 8693 token exchange. Primarily used for organization switching.
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `config` | `TokenExchangeRequestConfig` | Exchange parameters including `subjectToken` and `audience` |
+
+**Returns:** A new `TokenResponse` scoped to the target audience.
+
+---
+
+### `clearSession`
+
+```kotlin
+fun clearSession()
+```
+
+Clears all local session state without server-side token revocation. **Synchronous.** Use `signOut()` for a full sign-out.
+
+---
+
+## User & Profile
+
+### `getUser`
+
+```kotlin
+suspend fun getUser(): User
+```
+
+Fetches verified user claims from the `/oauth2/userinfo` endpoint. The result is cached; call `clearSession()` to invalidate the cache.
+
+**Returns:** A `User` object with `sub`, `username`, `email`, `displayName`, and `profilePicture`.
+
+---
+
+### `getUserProfile`
+
+```kotlin
+suspend fun getUserProfile(): UserProfile
+```
+
+Fetches the full SCIM 2.0 user profile from `/scim2/Me`.
+
+**Returns:** A `UserProfile` object with `id` and a `claims` map of all profile attributes.
+
+---
+
+### `updateUserProfile`
+
+```kotlin
+suspend fun updateUserProfile(payload: Map<String, Any>, userId: String? = null): User
+```
+
+Updates user profile attributes.
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `payload` | `Map<String, Any>` | Map of profile attributes to update |
+| `userId` | `String?` | Target user ID. Defaults to the currently signed-in user |
+
+**Returns:** The updated `User` object.
+
+---
+
+## Organizations
+
+### `getAllOrganizations`
+
+```kotlin
+suspend fun getAllOrganizations(): AllOrganizationsResponse
+```
+
+Returns all organizations accessible to the authenticated user.
+
+**Returns:** `AllOrganizationsResponse` with a list of `Organization` objects, `totalCount`, and pagination cursor.
+
+---
+
+### `getMyOrganizations`
+
+```kotlin
+suspend fun getMyOrganizations(): List<Organization>
+```
+
+Returns the organizations the signed-in user is a member of.
+
+---
+
+### `getCurrentOrganization`
+
+```kotlin
+suspend fun getCurrentOrganization(): Organization?
+```
+
+Returns the organization the current session is scoped to, derived from the `org_id` and `org_name` claims in the ID token. Returns `null` if the session is not organization-scoped.
+
+---
+
+### `createOrganization`
+
+```kotlin
+suspend fun createOrganization(name: String, handle: String? = null): Organization
+```
+
+Creates a new organization under the authenticated user's account.
+
+| Parameter | Type | Description |
+| :--- | :--- | :--- |
+| `name` | `String` | Display name of the organization |
+| `handle` | `String?` | URL-friendly handle. Generated from `name` if not provided |
+
+**Returns:** The newly created `Organization`.
+
+---
+
+### `inviteUser`
+
+```kotlin
+suspend fun inviteUser(email: String)
+```
+
+Sends an invitation email to a user for the current organization.
+
+---
+
+### `switchOrganization`
+
+```kotlin
+suspend fun switchOrganization(organization: Organization): TokenResponse
+```
+
+Exchanges the current access token for a new one scoped to the given organization using RFC 8693 token exchange.
+
+**Returns:** A `TokenResponse` with the new organization-scoped tokens.
+
+---
+
+## Data Types
+
+### `EmbeddedSignInPayload`
+
+| Property | Type | Description |
+| :--- | :--- | :--- |
+| `flowId` | `String?` | Flow identifier from the previous response. `null` to start a new flow |
+| `actionId` | `String` | Action to execute (for example, `"init"`, `"basic_auth"`) |
+| `inputs` | `Map<String, String>` | Input values for the current step |
+
+### `EmbeddedFlowRequestConfig`
+
+| Property | Type | Description |
+| :--- | :--- | :--- |
+| `applicationId` | `String` | Application ID for the flow |
+| `flowType` | `FlowType` | Flow type. Defaults to `FlowType.AUTHENTICATION` |
+
+### `EmbeddedFlowResponse`
+
+| Property | Type | Description |
+| :--- | :--- | :--- |
+| `flowId` | `String?` | Flow identifier to pass in the next request |
+| `flowStatus` | `FlowStatus` | `PROMPT_ONLY`, `COMPLETE`, or `ERROR` |
+| `stepId` | `String?` | Current step identifier |
+| `data` | `FlowStepData?` | Available actions and input fields for the current step |
+| `assertion` | `String?` | Authorization code or token when `flowStatus == COMPLETE` |
+| `failureReason` | `String?` | Error description when `flowStatus == ERROR` |
+
+### `User`
+
+| Property | Type | Description |
+| :--- | :--- | :--- |
+| `sub` | `String` | Subject identifier (unique user ID) |
+| `username` | `String?` | Username |
+| `email` | `String?` | Email address |
+| `displayName` | `String?` | Display name |
+| `profilePicture` | `String?` | Profile picture URL |
+| `isNewUser` | `Boolean?` | Whether this is the user's first sign-in |
+| `claims` | `Map<String, Any>?` | Additional claims from the ID token |
+
+### `Organization`
+
+| Property | Type | Description |
+| :--- | :--- | :--- |
+| `id` | `String` | Organization identifier |
+| `name` | `String` | Organization display name |
+| `handle` | `String?` | URL-friendly organization handle |
+
+---
+
+## Error Handling
+
+All `suspend` methods throw `IAMException` on failure.
+
+```kotlin
+try {
+    val user = client.getUser()
+} catch (e: IAMException) {
+    when (e.code) {
+        IAMErrorCode.SESSION_EXPIRED -> { /* prompt re-authentication */ }
+        IAMErrorCode.NETWORK_ERROR -> { /* show connectivity error */ }
+        IAMErrorCode.AUTHENTICATION_FAILED -> { /* show wrong credentials message */ }
+        else -> { /* generic error handling */ }
+    }
+}
+```
+
+### `IAMErrorCode` Values
+
+| Code | Description |
+| :--- | :--- |
+| `SDK_NOT_INITIALIZED` | A method was called before `initialize()` |
+| `ALREADY_INITIALIZED` | `initialize()` was called more than once |
+| `INVALID_CONFIGURATION` | A required configuration value is missing or invalid |
+| `AUTHENTICATION_FAILED` | Sign-in credentials were rejected |
+| `SESSION_EXPIRED` | The session has expired and cannot be refreshed |
+| `MFA_REQUIRED` | Multi-factor authentication is required to continue |
+| `USER_ALREADY_EXISTS` | Sign-up attempted for an already-registered email |
+| `INVALID_GRANT` | The authorization code or refresh token is invalid |
+| `INVALID_INPUT` | An input parameter is malformed |
+| `NETWORK_ERROR` | A network request failed |
+| `TOKEN_VALIDATION_FAILED` | The received ID token failed validation |
+| `UNKNOWN` | An unexpected error occurred |

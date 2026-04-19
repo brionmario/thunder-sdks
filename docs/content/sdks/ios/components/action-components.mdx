@@ -1,0 +1,106 @@
+---
+title: Action Components
+description: SwiftUI action components for triggering Thunder authentication flows
+---
+
+# Action Components
+
+Action components trigger authentication flows. They read state from the SwiftUI environment and call through to `ThunderState.client` automatically.
+
+---
+
+## `ThunderSignInButton`
+
+Tappable button that initiates the sign-in flow. Use the `onTap` closure to open your sign-in UI (redirect or embedded).
+
+### Usage
+
+```swift title="ContentView.swift" showLineNumbers
+import ThunderSwiftUI
+
+struct ContentView: View {
+    var body: some View {
+        ThunderSignInButton {
+            // open redirect or embedded sign-in
+        }
+    }
+}
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `onTap` | `(() -> Void)?` | ❌ | Called when the button is tapped. Use this to launch your sign-in flow |
+
+### Base Variant
+
+`BaseThunderSignInButton` renders an unstyled button so you can apply your own design:
+
+```swift
+BaseThunderSignInButton(label: "Log In", isLoading: false) {
+    // handle tap
+}
+```
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `label` | `String` | ✅ | Button label text |
+| `isLoading` | `Bool` | ❌ | Disables the button and shows loading state. Defaults to `false` |
+| `action` | `() -> Void` | ✅ | Called when tapped |
+
+---
+
+## `ThunderSignOutButton`
+
+Tappable button that calls `ThunderState.client.signOut()` and then refreshes state.
+
+### Usage
+
+```swift
+ThunderSignOutButton {
+    // navigate to home screen after sign-out
+}
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `onSignedOut` | `(() -> Void)?` | ❌ | Called after sign-out completes successfully |
+| `onError` | `((Error) -> Void)?` | ❌ | Called if sign-out fails |
+
+### Base Variant
+
+`BaseThunderSignOutButton` accepts a custom content builder:
+
+```swift
+BaseThunderSignOutButton { isLoading, signOut in
+    Button(isLoading ? "Signing out…" : "Sign Out") { signOut() }
+        .disabled(isLoading)
+}
+```
+
+---
+
+## `ThunderSignUpButton`
+
+Tappable button that initiates the sign-up flow. Use `onTap` to open your registration UI.
+
+### Usage
+
+```swift
+ThunderSignUpButton {
+    // open sign-up UI
+}
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `onTap` | `(() -> Void)?` | ❌ | Called when the button is tapped |
+
+### Base Variant
+
+`BaseThunderSignUpButton` accepts the same props as `BaseThunderSignInButton`.

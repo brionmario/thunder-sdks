@@ -1,0 +1,434 @@
+---
+title: Flutter Quickstart
+sidebar_position: 5
+description: Quick start guide to integrate Thunder with a Flutter application
+---
+
+import {
+  Boxes,
+  Package,
+  LogIn,
+  BookOpen,
+  Clock,
+  Server,
+  Hexagon,
+  FileCode,
+} from '@wso2/oxygen-ui-icons-react';
+
+# Flutter Quickstart
+
+Welcome to the Flutter Quickstart guide! In this document, you will learn to build a Flutter app, add user sign-in, and display user profile information using Thunder.
+
+<TutorialHero>
+
+## What You Will Learn
+
+<TutorialHeroItem icon={<Boxes />}>Create a new Flutter app</TutorialHeroItem>
+<TutorialHeroItem icon={<Package />}>Install the <code>thunder_flutter</code> SDK</TutorialHeroItem>
+<TutorialHeroItem icon={<LogIn />}>Add user sign-in and sign-out</TutorialHeroItem>
+<TutorialHeroItem icon={<BookOpen />}>Display user profile information</TutorialHeroItem>
+
+## Prerequisites
+
+<TutorialHeroItem icon={<Clock />}>About 20 minutes</TutorialHeroItem>
+<TutorialHeroItem icon={<Server />}>Thunder running locally or on a server</TutorialHeroItem>
+<TutorialHeroItem icon={<Hexagon />}>Flutter 3.16+ installed on your system</TutorialHeroItem>
+<TutorialHeroItem icon={<Package />}>Dart 3.2+</TutorialHeroItem>
+<TutorialHeroItem icon={<FileCode />}>Basic familiarity with Flutter and Dart</TutorialHeroItem>
+
+</TutorialHero>
+
+<Stepper stepNode="h2" as="h2">
+
+## Create an Application in Thunder
+
+Before integrating Thunder with your Flutter app, you need to create an application in Thunder.
+
+### Using the Thunder Console
+
+1. Sign into the Thunder Console at [https://localhost:8090/console](https://localhost:8090/console)
+2. Navigate to **Applications** → **New Application**
+3. Provide the following details:
+   - **Name**: `my-flutter-app`
+   - **Type**: Mobile Application
+   - **Authorized Redirect URL**: `myapp://callback`
+
+:::info
+The authorized redirect URL is a custom URI scheme used to return users to your app after sign-in. Flutter handles this via platform-specific deep link configuration on Android and iOS.
+:::
+
+### Using the Thunder API
+
+Alternatively, you can create an application using the Thunder API. First, [obtain a system API token](/guides/quick-start/get-thunder#obtain-system-api-token), then:
+
+```bash
+curl -kL -X POST https://localhost:8090/applications \
+  -H 'Authorization: Bearer <your-system-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "my-flutter-app",
+    "inboundAuthConfig": [{
+      "type": "oauth2",
+      "config": {
+        "grantTypes": ["authorization_code", "refresh_token"],
+        "responseTypes": ["code"],
+        "redirectUris": ["myapp://callback"],
+        "tokenEndpointAuthMethod": "none",
+        "publicClient": true,
+        "pkceRequired": true
+      }
+    }]
+  }'
+```
+
+:::warning Important
+Note down the **Client ID** and **Application ID** from the response. You will need them to configure the Thunder SDK.
+:::
+
+## Create a Flutter App
+
+Create a new Flutter project using the Flutter CLI:
+
+```bash
+flutter create my_flutter_app
+cd my_flutter_app
+```
+
+Verify the project runs on your target platform:
+
+```bash
+flutter run
+```
+
+## Install the Thunder Flutter SDK
+
+Add the `thunder_flutter` package to your `pubspec.yaml`:
+
+```yaml title="pubspec.yaml" showLineNumbers
+dependencies:
+  flutter:
+    sdk: flutter
+  thunder_flutter: ^0.1.0
+  url_launcher: ^6.2.0
+  app_links: ^6.0.0
+```
+
+Install the packages:
+
+```bash
+flutter pub get
+```
+
+:::info
+`url_launcher` and `app_links` are used for redirect-based sign-in. If you are using embedded sign-in only, you can omit them.
+:::
+
+## Configure the Thunder SDK
+
+The `ThunderProvider` widget initializes the SDK and makes authentication state available to the entire widget tree. Wrap your root widget with it in `main.dart`:
+
+```dart title="lib/main.dart" showLineNumbers
+import 'package:flutter/material.dart';
+import 'package:thunder_flutter/thunder_flutter.dart';
+
+void main() {
+  runApp(
+    ThunderProvider(
+      config: ThunderConfig(
+        baseUrl: 'https://localhost:8090',
+        clientId: '<your-client-id>',
+        applicationId: '<your-application-id>',
+        afterSignInUrl: 'myapp://callback',
+        afterSignOutUrl: 'myapp://',
+        scopes: ['openid', 'profile', 'email'],
+      ),
+      child: const MyApp(),
+    ),
+  );
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Thunder Demo',
+      home: const HomeScreen(),
+    );
+  }
+}
+```
+
+:::warning Configuration
+Replace `<your-client-id>` and `<your-application-id>` with the values obtained when creating the application in Thunder.
+:::
+
+### Configuration Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `baseUrl` | Your Thunder instance URL (for example, `https://localhost:8090`) |
+| `clientId` | The Client ID from your Thunder application |
+| `applicationId` | The Application ID from your Thunder application |
+| `afterSignInUrl` | The deep link URI to return to after sign-in |
+| `afterSignOutUrl` | The URI to navigate to after sign-out |
+| `scopes` | OAuth2 scopes to request (defaults to `['openid']`) |
+
+## Choose How Users Will Sign In
+
+The Thunder Flutter SDK supports two sign-in approaches. Choose the one that best fits your application.
+
+### Option A: Redirect to Thunder
+
+In redirect mode, the SDK opens Thunder's hosted sign-in page in the device browser. This is the recommended approach as it supports all authentication methods configured in Thunder.
+
+**Step 1: Configure deep links**
+
+On **Android**, add an `intent-filter` to `AndroidManifest.xml`:
+
+```xml title="android/app/src/main/AndroidManifest.xml" showLineNumbers
+<activity android:name=".MainActivity" ... >
+    <intent-filter android:autoVerify="true">
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+        <category android:name="android.intent.category.BROWSABLE" />
+        <data android:scheme="myapp" android:host="callback" />
+    </intent-filter>
+</activity>
+```
+
+On **iOS**, add a URL scheme to `Info.plist`:
+
+```xml title="ios/Runner/Info.plist" showLineNumbers
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>myapp</string>
+        </array>
+    </dict>
+</array>
+```
+
+**Step 2: Launch the sign-in URL and handle the callback**
+
+```dart title="lib/home_screen.dart" showLineNumbers
+import 'package:flutter/material.dart';
+import 'package:thunder_flutter/thunder_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:app_links/app_links.dart';
+
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
+  @override
+  State<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  final _appLinks = AppLinks();
+
+  @override
+  void initState() {
+    super.initState();
+    // Listen for deep link callbacks
+    _appLinks.uriLinkStream.listen((uri) {
+      if (uri.scheme == 'myapp' && uri.host == 'callback') {
+        _handleCallback(uri.toString());
+      }
+    });
+  }
+
+  Future<void> _signIn() async {
+    final thunder = ThunderProvider.of(context);
+    final url = await thunder.client.buildSignInUrl();
+    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+  }
+
+  Future<void> _handleCallback(String url) async {
+    final thunder = ThunderProvider.of(context);
+    await thunder.client.handleRedirectCallback(url);
+    await thunder.refresh();
+  }
+
+  Future<void> _signOut() async {
+    final thunder = ThunderProvider.of(context);
+    await thunder.client.signOut();
+    await thunder.refresh();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final thunder = ThunderProvider.of(context);
+
+    if (thunder.isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Thunder Demo')),
+      body: Center(
+        child: thunder.isSignedIn
+            ? Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text('Welcome, ${thunder.user?.displayName ?? 'User'}!'),
+                  TextButton(onPressed: _signOut, child: const Text('Sign Out')),
+                ],
+              )
+            : ElevatedButton(
+                onPressed: _signIn,
+                child: const Text('Sign In'),
+              ),
+      ),
+    );
+  }
+}
+```
+
+### Option B: Embedded Sign-In
+
+In embedded mode, users enter their credentials directly in your app without any browser redirect. This gives you full control over the sign-in UI.
+
+```dart title="lib/sign_in_screen.dart" showLineNumbers
+import 'package:flutter/material.dart';
+import 'package:thunder_flutter/thunder_flutter.dart';
+
+class SignInScreen extends StatefulWidget {
+  const SignInScreen({super.key});
+
+  @override
+  State<SignInScreen> createState() => _SignInScreenState();
+}
+
+class _SignInScreenState extends State<SignInScreen> {
+  final _usernameController = TextEditingController();
+  final _passwordController = TextEditingController();
+  String? _errorMessage;
+
+  Future<void> _signIn() async {
+    final thunder = ThunderProvider.of(context);
+    setState(() => _errorMessage = null);
+
+    try {
+      // Step 1: Initiate the flow
+      final initResponse = await thunder.client.signIn(
+        payload: EmbeddedSignInPayload(actionId: 'init'),
+        request: EmbeddedFlowRequestConfig(applicationId: '<your-application-id>'),
+      );
+
+      // Step 2: Submit credentials
+      final result = await thunder.client.signIn(
+        payload: EmbeddedSignInPayload(
+          flowId: initResponse.flowId,
+          actionId: 'basic_auth',
+          inputs: {
+            'username': _usernameController.text,
+            'password': _passwordController.text,
+          },
+        ),
+        request: EmbeddedFlowRequestConfig(applicationId: '<your-application-id>'),
+      );
+
+      if (result.flowStatus == FlowStatus.complete) {
+        await thunder.refresh();
+      }
+    } on IAMException catch (e) {
+      setState(() => _errorMessage = e.message);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('Sign In')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextField(
+              controller: _usernameController,
+              decoration: const InputDecoration(labelText: 'Username'),
+            ),
+            TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Password'),
+            ),
+            if (_errorMessage != null)
+              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
+            const SizedBox(height: 16),
+            ElevatedButton(onPressed: _signIn, child: const Text('Sign In')),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+## Display User Profile
+
+After sign-in, access the user through `ThunderProvider.of(context).user`:
+
+```dart title="lib/profile_screen.dart" showLineNumbers
+import 'package:flutter/material.dart';
+import 'package:thunder_flutter/thunder_flutter.dart';
+
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final thunder = ThunderProvider.of(context);
+    final user = thunder.user;
+
+    if (user == null) return const SizedBox.shrink();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Profile')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Welcome, ${user.displayName ?? user.username ?? 'User'}!',
+              style: Theme.of(context).textTheme.headlineSmall,
+            ),
+            if (user.email != null) ...[
+              const SizedBox(height: 8),
+              Text('Email: ${user.email}'),
+            ],
+            const SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () async {
+                await thunder.client.signOut();
+                await thunder.refresh();
+              },
+              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+              child: const Text('Sign Out'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+## Run Your App
+
+Start the development build on your connected device or emulator:
+
+```bash
+flutter run
+```
+
+:::tip Success
+You should now see your app with a sign-in button. Tap it to authenticate with Thunder!
+:::
+
+</Stepper>

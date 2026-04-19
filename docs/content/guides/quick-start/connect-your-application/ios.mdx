@@ -1,0 +1,368 @@
+---
+title: iOS Quickstart
+sidebar_position: 4
+description: Quick start guide to integrate Thunder with an iOS application
+---
+
+import {
+  Boxes,
+  Package,
+  LogIn,
+  BookOpen,
+  Clock,
+  Server,
+  Hexagon,
+  FileCode,
+} from '@wso2/oxygen-ui-icons-react';
+
+# iOS Quickstart
+
+Welcome to the iOS Quickstart guide! In this document, you will learn to build an iOS app, add user sign-in, and display user profile information using Thunder.
+
+<TutorialHero>
+
+## What You Will Learn
+
+<TutorialHeroItem icon={<Boxes />}>Create a new iOS app with Xcode</TutorialHeroItem>
+<TutorialHeroItem icon={<Package />}>Install the Thunder Swift SDK via Swift Package Manager</TutorialHeroItem>
+<TutorialHeroItem icon={<LogIn />}>Add user sign-in and sign-out</TutorialHeroItem>
+<TutorialHeroItem icon={<BookOpen />}>Display user profile information</TutorialHeroItem>
+
+## Prerequisites
+
+<TutorialHeroItem icon={<Clock />}>About 20 minutes</TutorialHeroItem>
+<TutorialHeroItem icon={<Server />}>Thunder running locally or on a server</TutorialHeroItem>
+<TutorialHeroItem icon={<Hexagon />}>Xcode 15 or later</TutorialHeroItem>
+<TutorialHeroItem icon={<Package />}>iOS 16+ deployment target</TutorialHeroItem>
+<TutorialHeroItem icon={<FileCode />}>Basic familiarity with Swift and SwiftUI</TutorialHeroItem>
+
+</TutorialHero>
+
+<Stepper stepNode="h2" as="h2">
+
+## Create an Application in Thunder
+
+Before integrating Thunder with your iOS app, you need to create an application in Thunder.
+
+### Using the Thunder Console
+
+1. Sign into the Thunder Console at [https://localhost:8090/console](https://localhost:8090/console)
+2. Navigate to **Applications** → **New Application**
+3. Provide the following details:
+   - **Name**: `my-ios-app`
+   - **Type**: Mobile Application
+   - **Authorized Redirect URL**: `myapp://callback`
+
+:::info
+The authorized redirect URL is a custom URI scheme that iOS uses to return the user to your app after sign-in. You will register `myapp` as a URL scheme in your app's `Info.plist` in a later step.
+:::
+
+### Using the Thunder API
+
+Alternatively, you can create an application using the Thunder API. First, [obtain a system API token](/guides/quick-start/get-thunder#obtain-system-api-token), then:
+
+```bash
+curl -kL -X POST https://localhost:8090/applications \
+  -H 'Authorization: Bearer <your-system-token>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "name": "my-ios-app",
+    "inboundAuthConfig": [{
+      "type": "oauth2",
+      "config": {
+        "grantTypes": ["authorization_code", "refresh_token"],
+        "responseTypes": ["code"],
+        "redirectUris": ["myapp://callback"],
+        "tokenEndpointAuthMethod": "none",
+        "publicClient": true,
+        "pkceRequired": true
+      }
+    }]
+  }'
+```
+
+:::warning Important
+Note down the **Client ID** and **Application ID** from the response. You will need them to configure the Thunder SDK.
+:::
+
+## Create an iOS App
+
+Open Xcode and create a new project:
+
+1. Select **File** → **New** → **Project**
+2. Choose **iOS** → **App** and click **Next**
+3. Configure your project:
+   - **Product Name**: `MyiOSApp`
+   - **Organization Identifier**: `com.example`
+   - **Interface**: SwiftUI
+   - **Language**: Swift
+4. Set the **Minimum Deployments** target to **iOS 16.0**
+5. Click **Next**, choose a location, and click **Create**
+
+## Install the Thunder Swift SDK
+
+The Thunder Swift SDK is distributed via Swift Package Manager.
+
+### Using Xcode
+
+1. Open your project in Xcode
+2. Navigate to **File** → **Add Package Dependencies**
+3. Enter the repository URL: `https://github.com/asgardeo/thunder`
+4. Select **Up to Next Major Version** from `0.1.0`
+5. Click **Add Package**, then add the **Thunder** library to your app target
+
+### Using Package.swift
+
+If you manage dependencies via `Package.swift`, add the following:
+
+```swift title="Package.swift" showLineNumbers
+dependencies: [
+    .package(url: "https://github.com/asgardeo/thunder", from: "0.1.0")
+],
+targets: [
+    .target(
+        name: "MyiOSApp",
+        dependencies: [.product(name: "Thunder", package: "thunder")]
+    )
+]
+```
+
+## Configure the Thunder SDK
+
+Initialize the `ThunderClient` when your app launches. Update your main `App` struct:
+
+```swift title="MyiOSAppApp.swift" showLineNumbers
+import SwiftUI
+import Thunder
+
+@main
+struct MyiOSAppApp: App {
+
+    @StateObject private var authState = AuthState()
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+                .environmentObject(authState)
+                .onOpenURL { url in
+                    // Handle redirect callback
+                    Task {
+                        try? await authState.handleCallback(url: url.absoluteString)
+                    }
+                }
+        }
+    }
+}
+
+@MainActor
+class AuthState: ObservableObject {
+    let client = ThunderClient()
+
+    @Published var user: User?
+    @Published var isLoading = false
+    @Published var error: String?
+
+    init() {
+        Task {
+            try? await client.initialize(config: ThunderConfig(
+                baseUrl: "https://localhost:8090",
+                clientId: "<your-client-id>",
+                applicationId: "<your-application-id>",
+                afterSignInUrl: "myapp://callback",
+                afterSignOutUrl: "myapp://"
+            ))
+            if (try? await client.isSignedIn()) == true {
+                user = try? await client.getUser()
+            }
+        }
+    }
+
+    func handleCallback(url: String) async throws {
+        isLoading = true
+        defer { isLoading = false }
+        user = try await client.handleRedirectCallback(url: url)
+    }
+
+    func signOut() async throws {
+        isLoading = true
+        defer { isLoading = false }
+        _ = try await client.signOut()
+        user = nil
+    }
+}
+```
+
+:::warning Configuration
+Replace `<your-client-id>` and `<your-application-id>` with the values obtained when creating the application in Thunder.
+:::
+
+### Configuration Parameters
+
+| Parameter | Description |
+|-----------|-------------|
+| `baseUrl` | Your Thunder instance URL (for example, `https://localhost:8090`) |
+| `clientId` | The Client ID from your Thunder application |
+| `applicationId` | The Application ID from your Thunder application |
+| `afterSignInUrl` | The URL scheme to return to after sign-in |
+| `afterSignOutUrl` | The URL scheme to navigate to after sign-out |
+
+## Choose How Users Will Sign In
+
+The Thunder Swift SDK supports two sign-in approaches. Choose the one that best fits your application.
+
+### Option A: Redirect to Thunder
+
+In redirect mode, the SDK opens Thunder's hosted sign-in page in an `ASWebAuthenticationSession`. This is the recommended approach as it supports all authentication methods configured in Thunder.
+
+**Step 1: Register a URL scheme in `Info.plist`**
+
+Add your custom URL scheme so iOS routes the callback back to your app. In Xcode, open your target's **Info** tab, expand **URL Types**, and add:
+
+- **Identifier**: `com.example.myiosapp`
+- **URL Schemes**: `myapp`
+
+**Step 2: Launch the sign-in page**
+
+```swift title="ContentView.swift" showLineNumbers
+import SwiftUI
+import AuthenticationServices
+
+struct ContentView: View {
+    @EnvironmentObject var authState: AuthState
+
+    var body: some View {
+        VStack {
+            if authState.isLoading {
+                ProgressView()
+            } else if let user = authState.user {
+                Text("Welcome, \(user.displayName ?? user.username ?? "User")!")
+                Button("Sign Out") {
+                    Task { try? await authState.signOut() }
+                }
+            } else {
+                Button("Sign In") {
+                    Task { await signIn() }
+                }
+            }
+        }
+    }
+
+    @MainActor
+    func signIn() async {
+        guard let signInURL = try? authState.client.buildSignInURL() else { return }
+        let session = ASWebAuthenticationSession(
+            url: signInURL,
+            callbackURLScheme: "myapp"
+        ) { callbackURL, error in
+            guard let callbackURL, error == nil else { return }
+            Task {
+                try? await authState.handleCallback(url: callbackURL.absoluteString)
+            }
+        }
+        session.presentationContextProvider = // your context provider
+        session.start()
+    }
+}
+```
+
+:::info ASWebAuthenticationSession
+`ASWebAuthenticationSession` requires a `presentationContextProvider`. In a SwiftUI app, you can use a `UIWindowScene` reference. See the [Apple documentation](https://developer.apple.com/documentation/authenticationservices/aswebauthenticationsession) for details.
+:::
+
+### Option B: Embedded Sign-In
+
+In embedded mode, users enter their credentials directly in your app without any browser redirect. This gives you full control over the sign-in UI.
+
+```swift title="SignInView.swift" showLineNumbers
+import SwiftUI
+import Thunder
+
+struct SignInView: View {
+    @EnvironmentObject var authState: AuthState
+    @State private var username = ""
+    @State private var password = ""
+    @State private var errorMessage: String?
+
+    var body: some View {
+        Form {
+            TextField("Username", text: $username)
+                .autocapitalization(.none)
+            SecureField("Password", text: $password)
+            if let error = errorMessage {
+                Text(error).foregroundColor(.red)
+            }
+            Button("Sign In") {
+                Task { await signIn() }
+            }
+        }
+        .navigationTitle("Sign In")
+    }
+
+    func signIn() async {
+        do {
+            // Step 1: Initiate the flow
+            let initResponse = try await authState.client.signIn(
+                payload: EmbeddedSignInPayload(actionId: "init"),
+                request: EmbeddedFlowRequestConfig(applicationId: "<your-application-id>")
+            )
+
+            // Step 2: Submit credentials
+            let result = try await authState.client.signIn(
+                payload: EmbeddedSignInPayload(
+                    flowId: initResponse.flowId,
+                    actionId: "basic_auth",
+                    inputs: ["username": username, "password": password]
+                ),
+                request: EmbeddedFlowRequestConfig(applicationId: "<your-application-id>")
+            )
+
+            if result.flowStatus == .complete {
+                authState.user = try await authState.client.getUser()
+            }
+        } catch {
+            errorMessage = error.localizedDescription
+        }
+    }
+}
+```
+
+## Display User Profile
+
+After sign-in, the `AuthState.user` property is automatically populated. Display it in your views:
+
+```swift title="ProfileView.swift" showLineNumbers
+import SwiftUI
+import Thunder
+
+struct ProfileView: View {
+    @EnvironmentObject var authState: AuthState
+
+    var body: some View {
+        if let user = authState.user {
+            VStack(alignment: .leading, spacing: 12) {
+                Text("Welcome, \(user.displayName ?? "User")!")
+                    .font(.title2)
+                if let email = user.email {
+                    Label(email, systemImage: "envelope")
+                }
+                Button("Sign Out") {
+                    Task { try? await authState.signOut() }
+                }
+                .foregroundColor(.red)
+            }
+            .padding()
+        }
+    }
+}
+```
+
+## Run Your App
+
+1. Select your target device or simulator in Xcode
+2. Press **⌘R** or click the **Run** button in the toolbar
+
+:::tip Success
+You should now see your app with a sign-in button. Tap it to authenticate with Thunder!
+:::
+
+</Stepper>

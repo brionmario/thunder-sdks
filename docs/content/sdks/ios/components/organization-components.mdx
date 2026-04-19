@@ -1,0 +1,171 @@
+---
+title: Organization Components
+description: SwiftUI components for B2B organization management
+---
+
+# Organization Components
+
+Organization components display and manage the authenticated user's organizations. These are intended for B2B applications where users belong to one or more organizations.
+
+---
+
+## `ThunderOrganization`
+
+Displays the name of the organization the current session is scoped to.
+
+### Usage
+
+```swift
+import ThunderSwiftUI
+
+ThunderOrganization()
+```
+
+### Base Variant
+
+`BaseThunderOrganization` provides the `Organization?` to a custom content builder:
+
+```swift
+BaseThunderOrganization { org in
+    Label(org?.name ?? "Personal", systemImage: "building.2")
+}
+```
+
+---
+
+## `ThunderOrganizationList`
+
+Lists all organizations the authenticated user belongs to.
+
+### Usage
+
+```swift
+ThunderOrganizationList { org in
+    // navigate into organization
+}
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `onSelect` | `((Organization) -> Void)?` | ❌ | Called when the user taps an organization |
+
+### Base Variant
+
+`BaseThunderOrganizationList` exposes `(organizations, isLoading, error, onSelect)` to a builder:
+
+```swift
+BaseThunderOrganizationList { orgs, isLoading, error, select in
+    if isLoading { ProgressView() }
+    else {
+        ForEach(orgs, id: \.id) { org in
+            Button(org.name) { select(org) }
+        }
+    }
+}
+```
+
+---
+
+## `ThunderOrganizationProfile`
+
+Displays and edits the current organization's name and settings.
+
+### Usage
+
+```swift
+ThunderOrganizationProfile(
+    onSaved: { /* saved */ },
+    onError: { /* failed */ }
+)
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `onSaved` | `(() -> Void)?` | ❌ | Called after the organization profile is saved |
+| `onError` | `(() -> Void)?` | ❌ | Called if save fails |
+
+---
+
+## `ThunderOrganizationSwitcher`
+
+Picker to switch the active session to a different organization via token exchange.
+
+### Usage
+
+```swift
+ThunderOrganizationSwitcher()
+```
+
+### Base Variant
+
+`BaseThunderOrganizationSwitcher` exposes `(organizations, currentOrg, isSwitching, error, switchOrg)`:
+
+```swift
+BaseThunderOrganizationSwitcher { orgs, current, isSwitching, error, switchOrg in
+    Picker("Organization", selection: .constant(current?.id ?? "")) {
+        ForEach(orgs, id: \.id) { org in
+            Text(org.name).tag(org.id)
+        }
+    }
+    .disabled(isSwitching)
+    .onChange(of: /* selection */) { id in
+        if let org = orgs.first(where: { $0.id == id }) {
+            switchOrg(org)
+        }
+    }
+}
+```
+
+---
+
+## `ThunderCreateOrganization`
+
+Form to create a new organization under the authenticated user's account.
+
+### Usage
+
+```swift
+ThunderCreateOrganization(
+    onCreated: { org in
+        print("Created: \(org.name)")
+    }
+)
+```
+
+### Props
+
+| Prop | Type | Required | Description |
+| :--- | :--- | :---: | :--- |
+| `onCreated` | `((Organization) -> Void)?` | ❌ | Called after the organization is created successfully |
+| `onError` | `((Error) -> Void)?` | ❌ | Called if creation fails |
+
+---
+
+## `ThunderLanguageSwitcher`
+
+Picker to switch the active UI locale for SDK component labels.
+
+### Usage
+
+```swift
+ThunderLanguageSwitcher()
+```
+
+### Base Variant
+
+`BaseThunderLanguageSwitcher` exposes `(locales, activeLocale, setLocale)`:
+
+```swift
+BaseThunderLanguageSwitcher { locales, active, setLocale in
+    Picker("Language", selection: .constant(active)) {
+        ForEach(locales, id: \.self) { locale in
+            Text(locale).tag(locale)
+        }
+    }
+    .onChange(of: /* selection */) { locale in setLocale(locale) }
+}
+```
