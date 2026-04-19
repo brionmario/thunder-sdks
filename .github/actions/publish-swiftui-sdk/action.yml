@@ -20,7 +20,7 @@ runs:
       run: |
         IOS_TAG="sdk/ios/v${{ inputs.ios_version }}"
         sed -i '' \
-          "s|\.package(path: \"../ios\")|.package(url: \"https://github.com/asgardeo/thunder\", revision: \"${IOS_TAG}\")|" \
+          "s|\.package(path: \"../ios\")|.package(url: \"https://github.com/${{ github.repository }}\", revision: \"${IOS_TAG}\")|" \
           tools/sdks/swiftui/Package.swift
 
     - name: 🔨 Build
