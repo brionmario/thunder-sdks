@@ -1,0 +1,186 @@
+name: 📦 SDK Release Tooling
+
+on:
+  workflow_dispatch:
+    inputs:
+      sdk:
+        description: 'SDK to release'
+        required: true
+        type: choice
+        options:
+          - android
+          - compose
+          - ios
+          - swiftui
+          - flutter
+      bump_type:
+        description: 'Semver bump to apply to the current SDK version'
+        required: false
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+        default: patch
+      dep_version:
+        description: 'Dependency version for cross-SDK releases: Android version for Compose, iOS version for SwiftUI (leave blank otherwise)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  packages: write
+  id-token: write  # required for pub.dev OIDC publishing
+
+concurrency:
+  group: sdk-release-${{ github.event.inputs.sdk }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_GIT_USER_NAME: "thunder-automation-bot"
+  RELEASE_GIT_USER_EMAIL: "thunder-bot@wso2.com"
+
+jobs:
+  compute-version:
+    name: 📐 Compute Release Version
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.bump.outputs.new_version }}
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+
+      - name: 📐 Read and bump version
+        id: bump
+        run: |
+          SDK="${{ github.event.inputs.sdk }}"
+          BUMP="${{ github.event.inputs.bump_type }}"
+
+          case "$SDK" in
+            android)
+              CURRENT=$(grep -m1 'version = "' tools/sdks/android/build.gradle.kts \
+                | sed 's/.*version = "\([^"]*\)".*/\1/')
+              ;;
+            compose)
+              CURRENT=$(grep -m1 'version = "' tools/sdks/compose/build.gradle.kts \
+                | sed 's/.*version = "\([^"]*\)".*/\1/')
+              ;;
+            ios)
+              CURRENT=$(grep "s\.version" tools/sdks/ios/Thunder.podspec \
+                | sed "s/.*s\.version\s*=\s*'\([^']*\)'.*/\1/")
+              ;;
+            swiftui)
+              CURRENT=$(cat tools/sdks/swiftui/VERSION | tr -d '[:space:]')
+              ;;
+            flutter)
+              CURRENT=$(grep '^version:' tools/sdks/flutter/pubspec.yaml \
+                | sed 's/version:[[:space:]]*//')
+              ;;
+          esac
+
+          if [ -z "$CURRENT" ]; then
+            echo "❌ Could not read current version for SDK: $SDK"
+            exit 1
+          fi
+          echo "✅ Current version: $CURRENT"
+
+          IFS='.' read -r MAJOR MINOR PATCH <<< "$CURRENT"
+          case "$BUMP" in
+            major) NEW="$((MAJOR + 1)).0.0" ;;
+            minor) NEW="${MAJOR}.$((MINOR + 1)).0" ;;
+            patch) NEW="${MAJOR}.${MINOR}.$((PATCH + 1))" ;;
+          esac
+
+          echo "✅ New version: $NEW"
+          echo "new_version=$NEW" >> "$GITHUB_OUTPUT"
+
+  release:
+    name: 🚀 Release ${{ github.event.inputs.sdk }} SDK
+    needs: compute-version
+    runs-on: macos-latest
+    steps:
+      - name: 📥 Checkout Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.THUNDER_AUTOMATION_BOT }}
+
+      - name: ⚙️ Configure Git
+        run: |
+          git config user.name "${{ env.RELEASE_GIT_USER_NAME }}"
+          git config user.email "${{ env.RELEASE_GIT_USER_EMAIL }}"
+
+      - name: 🏷️ Bump version in source file
+        run: |
+          SDK="${{ github.event.inputs.sdk }}"
+          VERSION="${{ needs.compute-version.outputs.new_version }}"
+
+          case "$SDK" in
+            android)
+              sed -i '' \
+                "s/version = \"[0-9]*\.[0-9]*\.[0-9]*\"/version = \"$VERSION\"/g" \
+                tools/sdks/android/build.gradle.kts
+              git add tools/sdks/android/build.gradle.kts
+              ;;
+            compose)
+              sed -i '' \
+                "s/version = \"[0-9]*\.[0-9]*\.[0-9]*\"/version = \"$VERSION\"/g" \
+                tools/sdks/compose/build.gradle.kts
+              git add tools/sdks/compose/build.gradle.kts
+              ;;
+            ios)
+              sed -i '' \
+                "s/s\.version\s*=\s*'[^']*'/s.version = '$VERSION'/" \
+                tools/sdks/ios/Thunder.podspec
+              git add tools/sdks/ios/Thunder.podspec
+              ;;
+            swiftui)
+              echo "$VERSION" > tools/sdks/swiftui/VERSION
+              git add tools/sdks/swiftui/VERSION
+              ;;
+            flutter)
+              sed -i '' \
+                "s/^version: .*/version: $VERSION/" \
+                tools/sdks/flutter/pubspec.yaml
+              git add tools/sdks/flutter/pubspec.yaml
+              ;;
+          esac
+
+          git commit -m "Bump $SDK SDK version to $VERSION"
+          git push
+
+      - name: 📦 Publish Android SDK
+        if: ${{ github.event.inputs.sdk == 'android' }}
+        uses: ./.github/actions/publish-android-sdk
+        with:
+          version: ${{ needs.compute-version.outputs.new_version }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📦 Publish Compose SDK
+        if: ${{ github.event.inputs.sdk == 'compose' }}
+        uses: ./.github/actions/publish-compose-sdk
+        with:
+          version: ${{ needs.compute-version.outputs.new_version }}
+          android_version: ${{ github.event.inputs.dep_version }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🍎 Publish iOS SDK
+        if: ${{ github.event.inputs.sdk == 'ios' }}
+        uses: ./.github/actions/publish-ios-sdk
+        with:
+          version: ${{ needs.compute-version.outputs.new_version }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🍎 Publish SwiftUI SDK
+        if: ${{ github.event.inputs.sdk == 'swiftui' }}
+        uses: ./.github/actions/publish-swiftui-sdk
+        with:
+          version: ${{ needs.compute-version.outputs.new_version }}
+          ios_version: ${{ github.event.inputs.dep_version }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐦 Publish Flutter SDK
+        if: ${{ github.event.inputs.sdk == 'flutter' }}
+        uses: ./.github/actions/publish-flutter-sdk
+        with:
+          version: ${{ needs.compute-version.outputs.new_version }}

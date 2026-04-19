@@ -1,0 +1,38 @@
+name: 'Publish Flutter SDK'
+description: 'Publishes the Thunder Flutter SDK to pub.dev under the thunder_flutter_experimental package name'
+
+inputs:
+  version:
+    description: 'Version to publish (e.g. 0.2.0)'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: 🐦 Setup Flutter
+      uses: subosito/flutter-action@v2
+      with:
+        channel: stable
+
+    - name: 🏷️ Patch package name and version
+      shell: bash
+      run: |
+        sed -i '' \
+          -e 's/^name: thunder_flutter$/name: thunder_flutter_experimental/' \
+          -e "s/^version: .*/version: ${{ inputs.version }}/" \
+          tools/sdks/flutter/pubspec.yaml
+
+    - name: 📦 Get dependencies
+      shell: bash
+      working-directory: tools/sdks/flutter
+      run: flutter pub get
+
+    - name: 🧪 Test
+      shell: bash
+      working-directory: tools/sdks/flutter
+      run: flutter test
+
+    - name: 🚀 Publish to pub.dev
+      shell: bash
+      working-directory: tools/sdks/flutter
+      run: flutter pub publish --force

@@ -1,0 +1,70 @@
+name: 'Publish Android SDK'
+description: 'Publishes the Thunder Android SDK to GitHub Packages under io.thunder.experimental'
+
+inputs:
+  version:
+    description: 'Version to publish (e.g. 0.2.0)'
+    required: true
+  github_token:
+    description: 'GitHub token with packages:write permission'
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: 🔧 Setup Android Build Environment
+      uses: ./.github/actions/setup-android-build
+
+    - name: 🏷️ Patch group ID and version
+      shell: bash
+      run: |
+        sed -i '' \
+          -e 's/groupId = "io\.thunder"/groupId = "io.thunder.experimental"/' \
+          -e 's/group = "io\.thunder"/group = "io.thunder.experimental"/' \
+          tools/sdks/android/build.gradle.kts
+        sed -i '' \
+          "s/version = \"[0-9]*\.[0-9]*\.[0-9]*\"/version = \"${{ inputs.version }}\"/g" \
+          tools/sdks/android/build.gradle.kts
+
+    - name: 📦 Append GitHub Packages publishing repository
+      shell: bash
+      run: |
+        cat >> tools/sdks/android/build.gradle.kts << 'GRADLE_EOF'
+
+        publishing {
+            repositories {
+                maven {
+                    name = "GitHubPackages"
+                    url = uri("https://maven.pkg.github.com/asgardeo/thunder")
+                    credentials {
+                        username = System.getenv("GITHUB_ACTOR") ?: ""
+                        password = System.getenv("GITHUB_TOKEN") ?: ""
+                    }
+                }
+            }
+        }
+        GRADLE_EOF
+
+    - name: 🔨 Build
+      shell: bash
+      working-directory: tools/sdks/android
+      run: gradle build
+      env:
+        GITHUB_ACTOR: ${{ github.actor }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+
+    - name: 🧪 Test
+      shell: bash
+      working-directory: tools/sdks/android
+      run: gradle test
+      env:
+        GITHUB_ACTOR: ${{ github.actor }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
+
+    - name: 🚀 Publish to GitHub Packages
+      shell: bash
+      working-directory: tools/sdks/android
+      run: gradle publish
+      env:
+        GITHUB_ACTOR: ${{ github.actor }}
+        GITHUB_TOKEN: ${{ inputs.github_token }}
