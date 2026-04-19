@@ -27,6 +27,8 @@ final class ThunderClientTests: XCTestCase {
             XCTFail("Expected INVALID_CONFIGURATION error")
         } catch let error as IAMError {
             XCTAssertEqual(error.code, .invalidConfiguration)
+        } catch {
+            XCTFail("Unexpected error: \(error)")
         }
     }
 
@@ -47,6 +49,8 @@ final class ThunderClientTests: XCTestCase {
             XCTFail("Expected SDK_NOT_INITIALIZED")
         } catch let error as IAMError {
             XCTAssertEqual(error.code, .sdkNotInitialized)
+        } catch {
+            XCTFail("Unexpected error: \(error)")
         }
     }
 
