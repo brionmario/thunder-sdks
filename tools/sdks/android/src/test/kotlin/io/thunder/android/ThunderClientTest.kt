@@ -168,7 +168,7 @@ class ThunderClientTest {
 
         val body = flowClient.submitBody("flow-123", "basic_auth")
 
-        assertEquals("flow-123", body["flowId"])
+        assertEquals("flow-123", body["executionId"])
         assertEquals("basic_auth", body["action"])
         assertFalse(body.containsKey("actionId"))
     }
