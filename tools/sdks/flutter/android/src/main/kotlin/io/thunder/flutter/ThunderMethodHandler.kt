@@ -107,6 +107,11 @@ class ThunderMethodHandler(private val context: Context) {
                     val org = Organization(id = orgMap["id"] as? String ?: "", name = orgMap["name"] as? String ?: "")
                     result.success(encodeTokenResponse(client.switchOrganization(org)))
                 }
+                "getFlowMeta" -> {
+                    val appId = args["applicationId"] as? String ?: ""
+                    val language = args["language"] as? String ?: "en-US"
+                    result.success(client.getFlowMeta(appId, language))
+                }
                 else -> result.notImplemented()
             }
         } catch (e: IAMException) {
@@ -177,7 +182,7 @@ class ThunderMethodHandler(private val context: Context) {
     private fun encodeFlowStepData(data: FlowStepData) = mapOf(
         "actions" to data.actions?.map { action ->
             mapOf(
-                "id" to action.id,
+                "id" to action.id.ifEmpty { action.ref ?: action.nextNode ?: "submit" },
                 "ref" to action.ref,
                 "nextNode" to action.nextNode,
                 "type" to action.type,

@@ -108,6 +108,12 @@ final class ThunderMethodHandler {
                 let tokenResponse = try await client.switchOrganization(org)
                 result(encodeTokenResponse(tokenResponse))
 
+            case "getFlowMeta":
+                let appId = args["applicationId"] as? String ?? ""
+                let language = args["language"] as? String ?? "en-US"
+                let meta = try await client.getFlowMeta(applicationId: appId, language: language)
+                result(meta)
+
             default:
                 result(FlutterMethodNotImplemented)
             }

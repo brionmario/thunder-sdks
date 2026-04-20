@@ -231,6 +231,20 @@ class ThunderClient {
     return TokenResponse.fromMap(result);
   }
 
+  // ── Flow Meta ─────────────────────────────────────────────────────────────
+
+  Future<Map<String, dynamic>> getFlowMeta(
+    String applicationId, {
+    String language = 'en-US',
+  }) async {
+    _requireInitialized();
+    final result = await _channel.invokeMap('getFlowMeta', {
+      'applicationId': applicationId,
+      'language': language,
+    });
+    return result.cast<String, dynamic>();
+  }
+
   // ── Private helpers ───────────────────────────────────────────────────────
 
   void _requireInitialized() {

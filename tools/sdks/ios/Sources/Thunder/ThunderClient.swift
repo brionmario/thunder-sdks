@@ -71,7 +71,7 @@ public final class ThunderClient {
         } else {
             response = try await flowClient!.initiate(applicationId: request.applicationId, flowType: request.flowType)
         }
-        try await establishSessionIfNeeded(from: response)
+        try establishSessionIfNeeded(from: response)
         return response
     }
 
@@ -177,7 +177,7 @@ public final class ThunderClient {
         } else {
             response = try await flowClient!.initiate(applicationId: appId, flowType: request?.flowType ?? .registration)
         }
-        try await establishSessionIfNeeded(from: response)
+        try establishSessionIfNeeded(from: response)
         return response
     }
 
@@ -231,6 +231,20 @@ public final class ThunderClient {
     public func getUser(options: [String: Any]? = nil) async throws -> User {
         try requireInitialized()
         if let user = currentUser { return user }
+        if let token = tokenStore?.accessToken(),
+           let claims = try? decodeJwtToken(token) as [String: AnyCodable],
+           let sub = claims["sub"]?.value as? String, !sub.isEmpty {
+            let user = User(
+                sub: sub,
+                username: (claims["username"]?.value ?? claims["preferred_username"]?.value) as? String,
+                email: claims["email"]?.value as? String,
+                displayName: (claims["name"]?.value ?? claims["displayName"]?.value) as? String,
+                profilePicture: claims["picture"]?.value as? String,
+                claims: claims
+            )
+            currentUser = user
+            return user
+        }
         let user: User = try await httpClient!.get(path: "/oauth2/userinfo")
         currentUser = user
         return user
@@ -301,6 +315,15 @@ public final class ThunderClient {
         return try await exchangeToken(config: exchangeConfig)
     }
 
+    // MARK: - Flow Meta
+
+    public func getFlowMeta(applicationId: String, language: String = "en-US") async throws -> [String: Any] {
+        try requireInitialized()
+        let path = "/flow/meta?id=\(applicationId)&type=APP&language=\(language)"
+        let result: [String: AnyCodable] = try await httpClient!.get(path: path, requiresAuth: false)
+        return result.mapValues { deepUnwrap($0.value) }
+    }
+
     // MARK: - Private helpers
 
     @discardableResult
@@ -327,18 +350,41 @@ public final class ThunderClient {
         }
     }
 
-    private func establishSessionIfNeeded(from response: EmbeddedFlowResponse) async throws {
+    private func deepUnwrap(_ value: Any) -> Any {
+        switch value {
+        case let codable as AnyCodable:
+            return deepUnwrap(codable.value)
+        case let dict as [String: AnyCodable]:
+            return dict.mapValues { deepUnwrap($0.value) }
+        case let dict as [String: Any]:
+            return dict.mapValues { deepUnwrap($0) }
+        case let array as [AnyCodable]:
+            return array.map { deepUnwrap($0.value) }
+        case let array as [Any]:
+            return array.map { deepUnwrap($0) }
+        default:
+            return value
+        }
+    }
+
+    private func establishSessionIfNeeded(from response: EmbeddedFlowResponse) throws {
         guard response.flowStatus == .complete,
               let assertion = response.assertion,
               !assertion.isEmpty else {
             return
         }
-
-        let exchangeConfig = TokenExchangeRequestConfig(
-            subjectToken: assertion,
-            subjectTokenType: "urn:ietf:params:oauth:token-type:jwt"
-        )
-        _ = try await exchangeToken(config: exchangeConfig)
+        let tokenResponse = TokenResponse(accessToken: assertion, tokenType: "Bearer")
+        try tokenStore!.save(tokenResponse)
+        if let claims = try? decodeJwtToken(assertion) as [String: AnyCodable] {
+            let sub = claims["sub"]?.value as? String ?? ""
+            currentUser = User(
+                sub: sub,
+                username: claims["username"]?.value as? String ?? claims["preferred_username"]?.value as? String,
+                email: claims["email"]?.value as? String,
+                displayName: claims["name"]?.value as? String ?? claims["displayName"]?.value as? String,
+                claims: claims
+            )
+        }
     }
 }
 

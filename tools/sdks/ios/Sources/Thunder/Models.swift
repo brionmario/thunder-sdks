@@ -9,6 +9,12 @@ public struct User: Codable {
     public let isNewUser: Bool?
     public let claims: [String: AnyCodable]?
 
+    enum CodingKeys: String, CodingKey {
+        case sub, username, email, isNewUser, claims
+        case displayName = "displayName"
+        case profilePicture = "picture"
+    }
+
     public init(
         sub: String,
         username: String? = nil,
@@ -224,7 +230,8 @@ public struct EmbeddedFlowResponse: Decodable {
     public let failureReason: String?
 
     enum CodingKeys: String, CodingKey {
-        case flowId, flowStatus, stepId, type, data, assertion, failureReason
+        case flowId = "executionId"
+        case flowStatus, stepId, type, data, assertion, failureReason
     }
 }
 

@@ -217,6 +217,16 @@ class ThunderClient {
         return updated
     }
 
+    // MARK: - Flow Meta
+
+    suspend fun getFlowMeta(applicationId: String, language: String = "en-US"): Map<String, Any?> {
+        requireInitialized()
+        val path = "/flow/meta?id=$applicationId&type=APP&language=$language"
+        val json: com.google.gson.JsonObject = httpClient!!.get(path, requiresAuth = false)
+        val type = object : com.google.gson.reflect.TypeToken<Map<String, Any?>>() {}.type
+        return com.google.gson.Gson().fromJson(json, type)
+    }
+
     // MARK: - Organizations
 
     suspend fun getAllOrganizations(): AllOrganizationsResponse {

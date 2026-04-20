@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -18,6 +19,25 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   _AuthMode _mode = _AuthMode.signIn;
+  FlowTemplateResolver? _resolver;
+
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(_fetchMeta);
+  }
+
+  Future<void> _fetchMeta() async {
+    final applicationId = dotenv.env['THUNDER_APP_ID'] ?? '';
+    if (applicationId.isEmpty) return;
+    try {
+      final thunder = ThunderProvider.of(context);
+      final meta = await thunder.client.getFlowMeta(applicationId);
+      if (mounted) setState(() => _resolver = FlowTemplateResolver(meta));
+    } catch (_) {
+      // non-fatal — template strings fall back to their fallback values
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -36,20 +56,17 @@ class _AuthScreenState extends State<AuthScreen> {
                 child: Column(
                   children: [
                     CircleAvatar(
-                      radius: 32,
+                      radius: 36,
                       backgroundColor: cs.primary,
-                      child: Text(
-                        'A',
-                        style: TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                          color: cs.onPrimary,
-                        ),
+                      child: Icon(
+                        Icons.home_filled,
+                        size: 36,
+                        color: cs.onPrimary,
                       ),
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'ACME Corp',
+                      'ACME Booking',
                       style: Theme.of(context)
                           .textTheme
                           .headlineSmall
@@ -57,7 +74,7 @@ class _AuthScreenState extends State<AuthScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      'Your trusted partner',
+                      'Find your perfect stay',
                       style: Theme.of(context)
                           .textTheme
                           .bodyMedium
@@ -90,8 +107,8 @@ class _AuthScreenState extends State<AuthScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: _mode == _AuthMode.signIn
-                      ? _MaterialSignIn(applicationId: applicationId)
-                      : _MaterialSignUp(applicationId: applicationId),
+                      ? _MaterialSignIn(applicationId: applicationId, resolver: _resolver)
+                      : _MaterialSignUp(applicationId: applicationId, resolver: _resolver),
                 ),
               ),
             ],
@@ -108,7 +125,8 @@ class _AuthScreenState extends State<AuthScreen> {
 
 class _MaterialSignIn extends StatefulWidget {
   final String applicationId;
-  const _MaterialSignIn({required this.applicationId});
+  final FlowTemplateResolver? resolver;
+  const _MaterialSignIn({required this.applicationId, this.resolver});
 
   @override
   State<_MaterialSignIn> createState() => _MaterialSignInState();
@@ -142,6 +160,7 @@ class _MaterialSignInState extends State<_MaterialSignIn> {
             submit: state.submit,
           ),
           controllers: _controllers,
+          resolver: widget.resolver,
         );
       },
     );
@@ -156,17 +175,14 @@ class _MaterialSignInState extends State<_MaterialSignIn> {
     if (!isComplete || assertion == null || assertion.isEmpty) return;
     if (_handledAssertion == assertion) return;
 
-    AssertionSession.setAssertion(assertion);
-
     _isCompleting = true;
     Future<void>(() async {
+      if (kDebugMode) {
+        debugPrint('[B2C] assertion JWT: $assertion');
+        debugPrint('[B2C] assertion payload: ${_decodeJwtPayload(assertion)}');
+      }
+      AssertionSession.setAssertion(assertion);
       try {
-        await thunder.client.exchangeToken(
-          TokenExchangeRequestConfig(
-            subjectToken: assertion,
-            subjectTokenType: 'urn:ietf:params:oauth:token-type:jwt',
-          ),
-        );
         await thunder.refresh();
       } catch (_) {
         // BaseThunderSignIn will surface errors through its state.
@@ -188,7 +204,8 @@ class _MaterialSignInState extends State<_MaterialSignIn> {
 
 class _MaterialSignUp extends StatefulWidget {
   final String applicationId;
-  const _MaterialSignUp({required this.applicationId});
+  final FlowTemplateResolver? resolver;
+  const _MaterialSignUp({required this.applicationId, this.resolver});
 
   @override
   State<_MaterialSignUp> createState() => _MaterialSignUpState();
@@ -222,6 +239,7 @@ class _MaterialSignUpState extends State<_MaterialSignUp> {
             submit: state.submit,
           ),
           controllers: _controllers,
+          resolver: widget.resolver,
         );
       },
     );
@@ -236,17 +254,10 @@ class _MaterialSignUpState extends State<_MaterialSignUp> {
     if (!isComplete || assertion == null || assertion.isEmpty) return;
     if (_handledAssertion == assertion) return;
 
-    AssertionSession.setAssertion(assertion);
-
     _isCompleting = true;
     Future<void>(() async {
+      AssertionSession.setAssertion(assertion);
       try {
-        await thunder.client.exchangeToken(
-          TokenExchangeRequestConfig(
-            subjectToken: assertion,
-            subjectTokenType: 'urn:ietf:params:oauth:token-type:jwt',
-          ),
-        );
         await thunder.refresh();
       } catch (_) {
         // BaseThunderSignUp will surface errors through its state.
@@ -283,8 +294,9 @@ class _FlowFormState {
 class _FlowForm extends StatelessWidget {
   final _FlowFormState state;
   final Map<String, TextEditingController> controllers;
+  final FlowTemplateResolver? resolver;
 
-  const _FlowForm({required this.state, required this.controllers});
+  const _FlowForm({required this.state, required this.controllers, this.resolver});
 
   @override
   Widget build(BuildContext context) {
@@ -364,12 +376,34 @@ class _FlowForm extends StatelessWidget {
 
   // ── Component renderer ────────────────────────────────────────────────────
 
+  String _effectiveCategory(Map<String, dynamic> comp) {
+    final category = _str(comp['category']);
+    if (category.isNotEmpty) return category;
+    switch (_str(comp['type'])) {
+      case 'TEXT':
+      case 'IMAGE':
+      case 'RICH_TEXT':
+        return 'DISPLAY';
+      case 'BLOCK':
+        return 'BLOCK';
+      case 'TEXT_INPUT':
+      case 'PASSWORD_INPUT':
+      case 'EMAIL_INPUT':
+      case 'NUMBER_INPUT':
+        return 'FIELD';
+      case 'ACTION':
+        return 'ACTION';
+      default:
+        return '';
+    }
+  }
+
   Widget _renderComponent(
     BuildContext context,
     Map<String, dynamic> comp,
     List<Map<String, dynamic>> actions,
   ) {
-    final category = _str(comp['category']);
+    final category = _effectiveCategory(comp);
     final type = _str(comp['type']);
 
     switch (category) {
@@ -497,7 +531,7 @@ class _FlowForm extends StatelessWidget {
       orElse: () => const <String, dynamic>{},
     );
     if (matchByRef.isNotEmpty) {
-      return _str(matchByRef['id'], fallback: 'submit');
+      return _actionSubmitId(matchByRef);
     }
 
     final matchById = actions.firstWhere(
@@ -505,16 +539,19 @@ class _FlowForm extends StatelessWidget {
       orElse: () => const <String, dynamic>{},
     );
     if (matchById.isNotEmpty) {
-      return _str(matchById['id'], fallback: 'submit');
+      return _actionSubmitId(matchById);
     }
 
     final index = _actionIndex(metaActionId);
     if (index != null && index >= 0 && index < actions.length) {
-      return _str(actions[index]['id'], fallback: 'submit');
+      return _actionSubmitId(actions[index]);
     }
 
-    return _str(actions.first['id'], fallback: 'submit');
+    return _actionSubmitId(actions.first);
   }
+
+  String _actionSubmitId(Map<String, dynamic> action) =>
+      _str(action['ref'], fallback: _str(action['id'], fallback: _str(action['nextNode'], fallback: 'submit')));
 
   int? _actionIndex(String metaActionId) {
     if (!metaActionId.startsWith('action_')) return null;
@@ -553,7 +590,8 @@ class _FlowForm extends StatelessWidget {
   String _resolve(dynamic value, {String fallback = ''}) {
     final s = value is String ? value.trim() : '';
     if (s.isEmpty) return fallback;
-    return s;
+    final resolved = resolver?.resolve(s) ?? s;
+    return resolved.isEmpty ? fallback : resolved;
   }
 
   String _str(dynamic v, {String fallback = ''}) =>
@@ -589,8 +627,7 @@ class _FlowForm extends StatelessWidget {
 
     void walk(List<Map<String, dynamic>> list) {
       for (final comp in list) {
-        final category = _str(comp['category']);
-        if (category == 'FIELD') {
+        if (_effectiveCategory(comp) == 'FIELD') {
           final ref = _fieldRef(comp);
           if (ref.isNotEmpty) {
             refs.add(ref);
@@ -613,7 +650,7 @@ class _FlowForm extends StatelessWidget {
 
     void walk(List<Map<String, dynamic>> list) {
       for (final comp in list) {
-        if (_str(comp['category']) == 'ACTION') {
+        if (_effectiveCategory(comp) == 'ACTION') {
           found = true;
           return;
         }
@@ -637,5 +674,16 @@ class _FlowForm extends StatelessWidget {
         .whereType<Map>()
         .map((m) => m.map((k, v) => MapEntry('$k', v)))
         .toList();
+  }
+}
+
+String _decodeJwtPayload(String token) {
+  try {
+    final parts = token.split('.');
+    if (parts.length != 3) return '(not a JWT)';
+    final padded = parts[1].padRight((parts[1].length + 3) ~/ 4 * 4, '=');
+    return utf8.decode(base64Url.decode(padded));
+  } catch (e) {
+    return '(decode error: $e)';
   }
 }

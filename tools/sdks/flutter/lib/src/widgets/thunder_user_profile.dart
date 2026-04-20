@@ -1,60 +1,87 @@
-import 'package:flutter/widgets.dart';
+import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'thunder_provider.dart';
 import '../models/user_profile.dart';
 
-/// Editable profile management UI (spec §8.4 Presentation).
-/// Calls [getUserProfile()] on mount and [updateUserProfile()] on save.
+/// Read-only profile view built from the decoded access token.
 class ThunderUserProfile extends StatelessWidget {
   final VoidCallback? onSaved;
   final VoidCallback? onError;
 
   const ThunderUserProfile({super.key, this.onSaved, this.onError});
 
+  static const _labels = <String, String>{
+    'sub': 'User ID',
+    'username': 'Username',
+    'email': 'Email',
+    'displayName': 'Display Name',
+    'phone': 'Phone',
+  };
+
+  String _label(String key) =>
+      _labels[key] ?? key[0].toUpperCase() + key.substring(1);
+
   @override
   Widget build(BuildContext context) {
-    final state = ThunderProvider.of(context);
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
     return BaseThunderUserProfile(
       onSaved: onSaved,
       onError: onError,
-      builder: (ctx, profile, controllers, isLoading, error, save) => Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(state.i18n.resolve('userProfile.title')),
-          const SizedBox(height: 16),
-          if (isLoading && profile == null)
-            Text(state.i18n.resolve('userProfile.loading'))
-          else if (error != null)
-            Text(error)
-          else ...[
+      builder: (ctx, profile, controllers, isLoading, error, save) {
+        if (isLoading && profile == null) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (error != null) {
+          return Text(error, style: TextStyle(color: cs.error, fontSize: 13));
+        }
+        if (profile == null) return const SizedBox.shrink();
+        return Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
             for (final entry in controllers.entries) ...[
-              Semantics(
-                label: entry.key,
-                child: SizedBox(
-                  height: 44,
-                  child: EditableText(
-                    controller: entry.value,
-                    focusNode: FocusNode(),
-                    style: const TextStyle(fontSize: 16),
-                    cursorColor: const Color(0xFF000000),
-                    backgroundCursorColor: const Color(0xFF000000),
-                  ),
-                ),
+              _ClaimRow(
+                label: _label(entry.key),
+                value: entry.value.text,
+                labelStyle: tt.labelSmall?.copyWith(color: cs.onSurfaceVariant),
+                valueStyle: tt.bodyMedium,
               ),
-              const SizedBox(height: 12),
+              if (entry.key != controllers.keys.last)
+                Divider(height: 1, color: cs.outlineVariant),
             ],
-            GestureDetector(
-              onTap: isLoading ? null : save,
-              child: Container(
-                constraints: const BoxConstraints(minHeight: 44),
-                child: Text(state.i18n.resolve('userProfile.save')),
-              ),
-            ),
           ],
-        ],
-      ),
+        );
+      },
     );
   }
+}
+
+class _ClaimRow extends StatelessWidget {
+  final String label;
+  final String value;
+  final TextStyle? labelStyle;
+  final TextStyle? valueStyle;
+
+  const _ClaimRow({
+    required this.label,
+    required this.value,
+    this.labelStyle,
+    this.valueStyle,
+  });
+
+  @override
+  Widget build(BuildContext context) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(label, style: labelStyle),
+            const SizedBox(height: 2),
+            Text(value, style: valueStyle),
+          ],
+        ),
+      );
 }
 
 /// Unstyled base variant (spec §8.3).
@@ -99,15 +126,27 @@ class _BaseThunderUserProfileState extends State<BaseThunderUserProfile> {
     super.dispose();
   }
 
+  static const _hiddenClaims = {
+    'assurance', 'aud', 'exp', 'iat', 'iss', 'jti', 'nbf',
+  };
+
   Future<void> _load() async {
     setState(() { _isLoading = true; _error = null; });
     try {
       final state = ThunderProvider.of(context);
-      final profile = await state.client.getUserProfile();
-      final editableClaims = <String>['displayName', 'phoneNumbers'];
-      for (final key in editableClaims) {
-        final value = profile.claims[key]?.toString() ?? '';
-        _controllers.putIfAbsent(key, () => TextEditingController(text: value));
+      final token = await state.client.getAccessToken();
+      final parts = token.split('.');
+      if (parts.length != 3) throw Exception('Invalid token format');
+      final padded = parts[1].padRight((parts[1].length + 3) ~/ 4 * 4, '=');
+      final payload = json.decode(utf8.decode(base64Url.decode(padded))) as Map<String, dynamic>;
+      final profileClaims = {
+        for (final e in payload.entries)
+          if (!_hiddenClaims.contains(e.key)) e.key: e.value,
+      };
+      final profile = UserProfile(id: payload['sub'] as String? ?? '', claims: profileClaims);
+      for (final entry in profileClaims.entries) {
+        _controllers.putIfAbsent(
+            entry.key, () => TextEditingController(text: entry.value?.toString() ?? ''));
       }
       if (mounted) setState(() => _profile = profile);
     } catch (e) {
@@ -118,19 +157,7 @@ class _BaseThunderUserProfileState extends State<BaseThunderUserProfile> {
   }
 
   Future<void> _save() async {
-    setState(() { _isLoading = true; _error = null; });
-    try {
-      final state = ThunderProvider.of(context);
-      await state.client.updateUserProfile(
-        _controllers.map((k, v) => MapEntry(k, v.text)),
-      );
-      widget.onSaved?.call();
-    } catch (e) {
-      if (mounted) setState(() => _error = e.toString());
-      widget.onError?.call();
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
+    widget.onSaved?.call();
   }
 
   @override

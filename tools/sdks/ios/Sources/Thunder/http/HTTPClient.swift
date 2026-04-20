@@ -83,6 +83,8 @@ final class HTTPClient {
                 throw IAMError(code: .unknownError, message: "Failed to decode response", underlyingError: error)
             }
         case 400:
+            let rawBody = String(data: data, encoding: .utf8) ?? "<non-utf8>"
+            print("[DEBUG][HTTPClient] 400 response body: \(rawBody)")
             let detail = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["message"] as? String ?? "Bad request"
             throw IAMError(code: .invalidInput, message: detail)
         case 401:

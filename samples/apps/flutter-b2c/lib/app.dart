@@ -10,9 +10,9 @@ class FlutterB2CApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'ACME',
+      title: 'ACME Booking',
       theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF4F46E5),
+        colorSchemeSeed: const Color(0xFFFF5A5F),
         useMaterial3: true,
       ),
       home: const _RootScreen(),
@@ -35,7 +35,7 @@ class _RootScreen extends StatelessWidget {
             children: [
               CircularProgressIndicator(),
               SizedBox(height: 12),
-              Text('Starting ACME\u2026'),
+              Text('Starting ACME Booking\u2026'),
             ],
           ),
         ),

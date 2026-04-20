@@ -39,3 +39,4 @@ export 'src/widgets/thunder_organization_profile.dart';
 export 'src/widgets/thunder_organization_switcher.dart';
 export 'src/widgets/thunder_create_organization.dart';
 export 'src/widgets/thunder_language_switcher.dart';
+export 'src/flow_template_resolver.dart';

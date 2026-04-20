@@ -7,7 +7,7 @@ data class User(
     val username: String? = null,
     val email: String? = null,
     val displayName: String? = null,
-    val profilePicture: String? = null,
+    @SerializedName("picture") val profilePicture: String? = null,
     val isNewUser: Boolean? = null,
     val claims: Map<String, Any>? = null
 )
@@ -81,7 +81,7 @@ enum class FlowType(val value: String) {
 }
 
 data class EmbeddedFlowResponse(
-    val flowId: String? = null,
+    @SerializedName("executionId") val flowId: String? = null,
     val flowStatus: FlowStatus,
     val stepId: String? = null,
     val type: String? = null,
@@ -90,7 +90,7 @@ data class EmbeddedFlowResponse(
     val failureReason: String? = null
 )
 
-enum class FlowStatus { PROMPT_ONLY, COMPLETE, ERROR }
+enum class FlowStatus { PROMPT_ONLY, INCOMPLETE, COMPLETE, ERROR }
 
 data class FlowStepData(
     val actions: List<FlowAction>? = null,
@@ -107,7 +107,7 @@ data class FlowAction(
 )
 
 data class FlowInput(
-    val name: String,
+    @SerializedName("identifier") val name: String,
     val type: String? = null,
     val required: Boolean? = null
 )

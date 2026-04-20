@@ -23,12 +23,16 @@ final class FlowExecutionClient {
         if !inputs.isEmpty {
             body["inputs"] = inputs
         }
+        if let data = try? JSONSerialization.data(withJSONObject: body, options: .prettyPrinted),
+           let json = String(data: data, encoding: .utf8) {
+            print("[DEBUG][FlowExecutionClient] submit body:\n\(json)")
+        }
         return try await httpClient.post(path: "/flow/execute", body: body, requiresAuth: false)
     }
 
     func submitBody(flowId: String, actionId: String) -> [String: Any] {
         [
-            "flowId": flowId,
+            "executionId": flowId,
             "action": actionId
         ]
     }

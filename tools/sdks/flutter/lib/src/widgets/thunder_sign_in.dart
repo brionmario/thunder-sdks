@@ -261,6 +261,7 @@ class _BaseThunderSignInState extends State<BaseThunderSignIn> {
 
   Future<void> _submit(String actionId, Map<String, String> inputs) async {
     final flowId = _currentStep?.flowId;
+    debugPrint('[ThunderSignIn] _submit flowId=$flowId actionId=$actionId inputs=${inputs.keys.toList()}');
     if (flowId == null) return;
     setState(() => _isLoading = true);
     try {
@@ -334,7 +335,8 @@ class _BaseThunderSignInState extends State<BaseThunderSignIn> {
       } else {
         if (mounted) setState(() { _currentStep = response; _error = null; });
       }
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('[ThunderSignIn] _submit error: $e\n$st');
       if (mounted) setState(() => _error = e.toString());
       widget.onError?.call();
     } finally {
