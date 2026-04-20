@@ -58,11 +58,15 @@ class _BaseThunderOrganizationListState extends State<BaseThunderOrganizationLis
   List<Organization> _orgs = [];
   bool _isLoading = false;
   String? _error;
+  bool _loadStarted = false;
 
   @override
-  void initState() {
-    super.initState();
-    _load();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_loadStarted && ThunderProvider.of(context).initialized) {
+      _loadStarted = true;
+      _load();
+    }
   }
 
   Future<void> _load() async {

@@ -68,11 +68,15 @@ class _BaseThunderOrganizationSwitcherState
   Organization? _current;
   bool _isSwitching = false;
   String? _error;
+  bool _loadStarted = false;
 
   @override
-  void initState() {
-    super.initState();
-    _load();
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_loadStarted && ThunderProvider.of(context).initialized) {
+      _loadStarted = true;
+      _load();
+    }
   }
 
   Future<void> _load() async {
