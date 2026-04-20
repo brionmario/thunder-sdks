@@ -17,6 +17,16 @@ class User {
     this.claims,
   });
 
+  Map<String, dynamic> toMap() => {
+        'sub': sub,
+        if (username != null) 'username': username,
+        if (email != null) 'email': email,
+        if (displayName != null) 'displayName': displayName,
+        if (profilePicture != null) 'profilePicture': profilePicture,
+        if (isNewUser != null) 'isNewUser': isNewUser,
+        if (claims != null) 'claims': claims,
+      };
+
   factory User.fromMap(Map<dynamic, dynamic> map) => User(
         sub: map['sub'] as String,
         username: map['username'] as String?,
