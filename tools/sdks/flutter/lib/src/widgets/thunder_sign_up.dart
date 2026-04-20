@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'thunder_provider.dart';
+import 'flow_form.dart';
 import '../models/flow_models.dart';
 import '../models/token_exchange_config.dart';
 
@@ -18,122 +19,15 @@ class ThunderSignUp extends StatelessWidget {
       applicationId: applicationId,
       onSuccess: onSuccess,
       onError: onError,
-      builder: (ctx, flowState) => _DefaultSignUpLayout(
-        flowState: flowState,
-        label: state.i18n.resolve('signUp.submit'),
-        title: state.i18n.resolve('signUp.title'),
-        errorFallback: state.i18n.resolve('signUp.error.generic'),
+      builder: (ctx, flowState) => FlowForm(
+        applicationId: applicationId,
+        currentStep: flowState.currentStep,
+        isLoading: flowState.isLoading,
+        error: flowState.error,
+        submit: flowState.submit,
+        submitLabel: state.i18n.resolve('signUp.submit'),
       ),
     );
-  }
-}
-
-class _DefaultSignUpLayout extends StatefulWidget {
-  final _FlowState flowState;
-  final String label;
-  final String title;
-  final String errorFallback;
-
-  const _DefaultSignUpLayout({
-    required this.flowState,
-    required this.label,
-    required this.title,
-    required this.errorFallback,
-  });
-
-  @override
-  State<_DefaultSignUpLayout> createState() => _DefaultSignUpLayoutState();
-}
-
-class _DefaultSignUpLayoutState extends State<_DefaultSignUpLayout> {
-  final _controllers = <String, TextEditingController>{};
-
-  @override
-  void dispose() {
-    for (final c in _controllers.values) c.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final s = widget.flowState;
-    final inputs = _readMapList(s.currentStep?.data?['inputs']);
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(widget.title),
-        const SizedBox(height: 16),
-        for (final input in inputs) ...[
-          _buildField(input),
-          const SizedBox(height: 12),
-        ],
-        if (s.error != null) Text(s.error!),
-        GestureDetector(
-          onTap: s.isLoading
-              ? null
-              : () => s.submit(
-                      _firstActionId(s.currentStep?.data),
-                    _controllers.map((k, v) => MapEntry(k, v.text)),
-                  ),
-          child: Container(
-            constraints: const BoxConstraints(minHeight: 44),
-            child: Text(widget.label),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildField(Map<String, dynamic> input) {
-    final name = _stringOr(input['name']);
-    _controllers.putIfAbsent(name, TextEditingController.new);
-    return SizedBox(
-      height: 44,
-      child: EditableText(
-        controller: _controllers[name]!,
-        focusNode: FocusNode(),
-        style: const TextStyle(fontSize: 16),
-        cursorColor: const Color(0xFF000000),
-        backgroundCursorColor: const Color(0xFF000000),
-        obscureText: _stringOr(input['type']).toLowerCase() == 'password',
-      ),
-    );
-  }
-
-  List<Map<String, dynamic>> _readMapList(dynamic value) {
-    if (value is! List) {
-      return const [];
-    }
-    return value
-        .whereType<Map>()
-        .map((m) => m.map((k, v) => MapEntry('$k', v)))
-        .toList(growable: false);
-  }
-
-  String _firstActionId(Map<String, dynamic>? data) {
-    final actions = _readMapList(data?['actions']);
-    if (actions.isEmpty) {
-      return 'submit';
-    }
-    return _actionId(actions.first);
-  }
-
-  String _actionId(Map<String, dynamic> action) {
-    return _stringOr(
-      action['ref'],
-      fallback: _stringOr(
-        action['id'],
-        fallback: _stringOr(action['nextNode'], fallback: 'submit'),
-      ),
-    );
-  }
-
-  String _stringOr(dynamic value, {String fallback = ''}) {
-    if (value is String && value.isNotEmpty) {
-      return value;
-    }
-    return fallback;
   }
 }
 

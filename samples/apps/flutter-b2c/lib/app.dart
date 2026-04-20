@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:thunder_flutter/thunder_flutter.dart';
-import 'assertion_session.dart';
 import 'screens/auth_screen.dart';
 import 'screens/home_screen.dart';
 
@@ -56,12 +55,6 @@ class _RootScreen extends StatelessWidget {
       );
     }
 
-    return ValueListenableBuilder<String?>(
-      valueListenable: AssertionSession.assertion,
-      builder: (context, assertion, _) {
-        final showHome = thunder.isSignedIn || (assertion?.isNotEmpty ?? false);
-        return showHome ? const HomeScreen() : const AuthScreen();
-      },
-    );
+    return thunder.isSignedIn ? const HomeScreen() : const AuthScreen();
   }
 }

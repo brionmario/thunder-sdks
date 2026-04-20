@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'thunder_provider.dart';
+import 'flow_form.dart';
 import '../models/flow_models.dart';
 import '../models/token_exchange_config.dart';
 import '../models/user.dart';
@@ -41,169 +42,16 @@ class ThunderSignIn extends StatelessWidget {
       applicationId: applicationId,
       onSuccess: onSuccess,
       onError: onError,
-      builder: (ctx, signInState) => _DefaultSignInLayout(
-        signInState: signInState,
-        i18n: state.i18n,
+      builder: (ctx, signInState) => FlowForm(
+        applicationId: applicationId,
+        currentStep: signInState.currentStep,
+        isLoading: signInState.isLoading,
+        error: signInState.error,
+        submit: signInState.submit,
+        submitLabel: state.i18n.resolve('signIn.submit'),
       ),
     );
   }
-}
-
-class _DefaultSignInLayout extends StatefulWidget {
-  final ThunderSignInState signInState;
-  final dynamic i18n;
-
-  const _DefaultSignInLayout({required this.signInState, required this.i18n});
-
-  @override
-  State<_DefaultSignInLayout> createState() => _DefaultSignInLayoutState();
-}
-
-class _DefaultSignInLayoutState extends State<_DefaultSignInLayout> {
-  final _controllers = <String, TextEditingController>{};
-
-  @override
-  void dispose() {
-    for (final c in _controllers.values) {
-      c.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final s = widget.signInState;
-    final inputs = _readMapList(s.currentStep?.data?['inputs']);
-    final actions = _readMapList(s.currentStep?.data?['actions']);
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(widget.i18n.resolve('signIn.title')),
-        const SizedBox(height: 16),
-        for (final input in inputs) ...[
-          Semantics(
-            label: _fieldKey(input),
-            child: _buildFieldGroup(input),
-          ),
-          const SizedBox(height: 12),
-        ],
-        if (s.error != null) ...[
-          Text(s.error!),
-          const SizedBox(height: 8),
-        ],
-        for (final action in actions)
-          GestureDetector(
-            onTap: s.isLoading
-                ? null
-                : () => s.submit(
-                      _actionId(action),
-                      _controllers.map((k, v) => MapEntry(k, v.text)),
-                    ),
-            child: Container(
-              constraints: const BoxConstraints(minHeight: 44),
-              child: Text(_stringOr(action['label'], fallback: widget.i18n.resolve('signIn.submit'))),
-            ),
-          ),
-        if (actions.isEmpty && !s.isLoading)
-          GestureDetector(
-            onTap: () => s.submit(
-              'init',
-              _controllers.map((k, v) => MapEntry(k, v.text)),
-            ),
-            child: Container(
-              constraints: const BoxConstraints(minHeight: 44),
-              child: Text(widget.i18n.resolve('signIn.submit')),
-            ),
-          ),
-      ],
-    );
-  }
-
-  String _fieldKey(Map<String, dynamic> input) =>
-      _stringOr(
-        input['identifier'] ?? input['name'] ?? input['ref'] ?? input['id'],
-        fallback: 'input',
-      );
-
-  Widget _buildFieldGroup(Map<String, dynamic> input) {
-    final key = _fieldKey(input);
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          key,
-          style: const TextStyle(fontSize: 12, color: Color(0xFF4A4A58)),
-        ),
-        const SizedBox(height: 6),
-        _buildField(input),
-      ],
-    );
-  }
-
-  Widget _buildField(Map<String, dynamic> input) {
-    final name = _fieldKey(input);
-    _controllers.putIfAbsent(name, TextEditingController.new);
-    final isPassword = _stringOr(input['type']).toLowerCase().contains('password');
-    return _SimpleTextField(
-      controller: _controllers[name]!,
-      placeholder: name,
-      obscureText: isPassword,
-    );
-  }
-
-  List<Map<String, dynamic>> _readMapList(dynamic value) {
-    if (value is! List) {
-      return const [];
-    }
-    return value
-        .whereType<Map>()
-        .map((m) => m.map((k, v) => MapEntry('$k', v)))
-        .toList(growable: false);
-  }
-
-  String _stringOr(dynamic value, {String fallback = ''}) {
-    if (value is String && value.isNotEmpty) {
-      return value;
-    }
-    return fallback;
-  }
-
-  String _actionId(Map<String, dynamic> action) {
-    return _stringOr(
-      action['ref'],
-      fallback: _stringOr(
-        action['id'],
-        fallback: _stringOr(action['nextNode'], fallback: 'submit'),
-      ),
-    );
-  }
-}
-
-class _SimpleTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String placeholder;
-  final bool obscureText;
-
-  const _SimpleTextField({
-    required this.controller,
-    required this.placeholder,
-    this.obscureText = false,
-  });
-
-  @override
-  Widget build(BuildContext context) => TextField(
-        controller: controller,
-        obscureText: obscureText,
-        style: const TextStyle(fontSize: 16),
-        decoration: InputDecoration(
-          hintText: placeholder,
-          isDense: true,
-          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
-          border: const OutlineInputBorder(),
-        ),
-      );
 }
 
 /// Unstyled base variant. [builder] receives [ThunderSignInState] to render any UI (spec §8.3).

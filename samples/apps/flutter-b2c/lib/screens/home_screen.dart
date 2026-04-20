@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:thunder_flutter/thunder_flutter.dart';
-import '../assertion_session.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -516,8 +515,6 @@ class _ProfileTab extends StatelessWidget {
 
             // ── Sign out ──────────────────────────────────────────────────
             BaseThunderSignOutButton(
-              onSuccess: AssertionSession.clear,
-              onError: AssertionSession.clear,
               builder: (ctx, isLoading) => OutlinedButton.icon(
                 onPressed: null,
                 icon: isLoading
