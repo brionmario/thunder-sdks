@@ -5,7 +5,7 @@ import io.thunder.compose.LocalThunder
 
 /** Renders [content] only when the user is authenticated (spec §8.4 Guards). */
 @Composable
-fun ThunderSignedIn(
+fun SignedIn(
     fallback: @Composable () -> Unit = {},
     content: @Composable () -> Unit,
 ) {

@@ -1,14 +1,14 @@
 import SwiftUI
 
 /// Locale picker that updates active language for component labels (spec §8.4 Presentation).
-public struct ThunderLanguageSwitcher: View {
+public struct LanguageSwitcher: View {
     @EnvironmentObject private var i18n: ThunderI18n
     public let locales: [String]
 
     public init(locales: [String] = []) { self.locales = locales }
 
     public var body: some View {
-        BaseThunderLanguageSwitcher(locales: locales) { available, active, select in
+        BaseLanguageSwitcher(locales: locales) { available, active, select in
             VStack(alignment: .leading, spacing: 0) {
                 ForEach(available, id: \.self) { locale in
                     Button {
@@ -32,7 +32,7 @@ public struct ThunderLanguageSwitcher: View {
 }
 
 /// Unstyled base variant (spec §8.3).
-public struct BaseThunderLanguageSwitcher<Content: View>: View {
+public struct BaseLanguageSwitcher<Content: View>: View {
     @EnvironmentObject private var state: ThunderState
     @EnvironmentObject private var i18n: ThunderI18n
     public let locales: [String]

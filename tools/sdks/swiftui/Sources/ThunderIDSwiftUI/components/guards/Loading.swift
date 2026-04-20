@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Renders `indicator` while the SDK is initializing or mid-operation (spec §8.4 Guards).
-public struct ThunderLoading<Indicator: View>: View {
+public struct Loading<Indicator: View>: View {
     @EnvironmentObject private var state: ThunderState
     private let indicator: Indicator
 
@@ -16,7 +16,7 @@ public struct ThunderLoading<Indicator: View>: View {
     }
 }
 
-public extension ThunderLoading where Indicator == ProgressView<EmptyView, EmptyView> {
+public extension Loading where Indicator == ProgressView<EmptyView, EmptyView> {
     init() {
         self.init { ProgressView() }
     }

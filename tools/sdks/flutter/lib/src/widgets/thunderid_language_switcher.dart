@@ -2,11 +2,11 @@ import 'package:flutter/widgets.dart';
 import 'thunderid_provider.dart';
 
 /// Locale picker that updates the active language for component labels (spec §8.4 Presentation).
-class ThunderIDLanguageSwitcher extends StatelessWidget {
+class LanguageSwitcher extends StatelessWidget {
   /// Available locales to display. If empty, falls back to [ThunderIDPreferences.i18n.bundles] keys.
   final List<String> locales;
 
-  const ThunderIDLanguageSwitcher({super.key, this.locales = const []});
+  const LanguageSwitcher({super.key, this.locales = const []});
 
   @override
   Widget build(BuildContext context) {
@@ -14,7 +14,7 @@ class ThunderIDLanguageSwitcher extends StatelessWidget {
     final available = locales.isNotEmpty
         ? locales
         : (state.preferences?.i18n?.bundles.keys.toList() ?? ['en-US']);
-    return BaseThunderIDLanguageSwitcher(
+    return BaseLanguageSwitcher(
       locales: available,
       builder: (ctx, active, select) => Column(
         mainAxisSize: MainAxisSize.min,
@@ -46,7 +46,7 @@ class ThunderIDLanguageSwitcher extends StatelessWidget {
 }
 
 /// Unstyled base variant (spec §8.3).
-class BaseThunderIDLanguageSwitcher extends StatefulWidget {
+class BaseLanguageSwitcher extends StatefulWidget {
   final List<String> locales;
   final Widget Function(
     BuildContext context,
@@ -54,19 +54,19 @@ class BaseThunderIDLanguageSwitcher extends StatefulWidget {
     void Function(String locale) selectLocale,
   ) builder;
 
-  const BaseThunderIDLanguageSwitcher({
+  const BaseLanguageSwitcher({
     super.key,
     required this.locales,
     required this.builder,
   });
 
   @override
-  State<BaseThunderIDLanguageSwitcher> createState() =>
-      _BaseThunderIDLanguageSwitcherState();
+  State<BaseLanguageSwitcher> createState() =>
+      _BaseLanguageSwitcherState();
 }
 
-class _BaseThunderIDLanguageSwitcherState
-    extends State<BaseThunderIDLanguageSwitcher> {
+class _BaseLanguageSwitcherState
+    extends State<BaseLanguageSwitcher> {
   @override
   Widget build(BuildContext context) {
     final state = ThunderIDProvider.of(context);

@@ -1,19 +1,19 @@
 import SwiftUI
 
 /// Button that initiates the sign-up flow (spec §8.4 Actions).
-public struct ThunderSignUpButton: View {
+public struct SignUpButton: View {
     @EnvironmentObject private var i18n: ThunderI18n
     public let onTap: (() -> Void)?
 
     public init(onTap: (() -> Void)? = nil) { self.onTap = onTap }
 
     public var body: some View {
-        BaseThunderSignUpButton(label: i18n.resolve("signUp.button"), action: { onTap?() })
+        BaseSignUpButton(label: i18n.resolve("signUp.button"), action: { onTap?() })
     }
 }
 
 /// Unstyled base variant (spec §8.3).
-public struct BaseThunderSignUpButton: View {
+public struct BaseSignUpButton: View {
     public let label: String
     public let action: () -> Void
 

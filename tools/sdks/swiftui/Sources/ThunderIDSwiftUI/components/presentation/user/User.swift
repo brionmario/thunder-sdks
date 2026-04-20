@@ -2,14 +2,14 @@ import SwiftUI
 import ThunderID
 
 /// Read-only display of the current user (spec §8.4 Presentation).
-public struct ThunderUser: View {
+public struct UserObject: View {
     @EnvironmentObject private var state: ThunderState
     @EnvironmentObject private var i18n: ThunderI18n
 
     public init() {}
 
     public var body: some View {
-        BaseThunderUser { user in
+        BaseUserObject { user in
             Text(user?.displayName ?? user?.username ?? i18n.resolve("user.anonymous"))
                 .accessibilityLabel(user?.displayName ?? i18n.resolve("user.anonymous"))
         }
@@ -17,7 +17,7 @@ public struct ThunderUser: View {
 }
 
 /// Unstyled base variant (spec §8.3).
-public struct BaseThunderUser<Content: View>: View {
+public struct BaseUserObject<Content: View>: View {
     @EnvironmentObject private var state: ThunderState
     public let content: (User?) -> Content
 

@@ -3,11 +3,11 @@ import 'thunderid_provider.dart';
 
 /// Renders [indicator] while the SDK is initializing or loading (spec §8.4 Control/Guard).
 /// Renders [child] (or nothing) once loading completes.
-class ThunderIDLoading extends StatelessWidget {
+class Loading extends StatelessWidget {
   final Widget? child;
   final Widget? indicator;
 
-  const ThunderIDLoading({super.key, this.child, this.indicator});
+  const Loading({super.key, this.child, this.indicator});
 
   @override
   Widget build(BuildContext context) {

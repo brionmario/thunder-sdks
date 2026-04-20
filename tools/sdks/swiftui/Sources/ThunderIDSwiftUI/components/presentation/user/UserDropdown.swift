@@ -2,7 +2,7 @@ import SwiftUI
 import ThunderID
 
 /// Avatar chip that expands to a menu with profile and sign-out actions (spec §8.4 Presentation).
-public struct ThunderUserDropdown: View {
+public struct UserDropdown: View {
     @EnvironmentObject private var state: ThunderState
     @EnvironmentObject private var i18n: ThunderI18n
     public let onProfileTap: (() -> Void)?
@@ -14,7 +14,7 @@ public struct ThunderUserDropdown: View {
     }
 
     public var body: some View {
-        BaseThunderUserDropdown { user, isOpen, toggle, signOut in
+        BaseUserDropdown { user, isOpen, toggle, signOut in
             VStack(alignment: .trailing, spacing: 0) {
                 Button(action: toggle) {
                     Text(initials(user))
@@ -49,7 +49,7 @@ public struct ThunderUserDropdown: View {
 }
 
 /// Unstyled base variant (spec §8.3).
-public struct BaseThunderUserDropdown<Content: View>: View {
+public struct BaseUserDropdown<Content: View>: View {
     @EnvironmentObject private var state: ThunderState
     public let content: (User?, Bool, () -> Void, () -> Void) -> Content
 

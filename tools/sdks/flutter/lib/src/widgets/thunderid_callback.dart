@@ -9,19 +9,19 @@ import '../models/user.dart';
 /// `code` query parameter.
 ///
 /// ```dart
-/// ThunderIDCallback(
+/// Callback(
 ///   url: callbackUrl,
 ///   onSuccess: (user) => Navigator.pushReplacementNamed(context, '/home'),
 ///   onError: (e) => Navigator.pushReplacementNamed(context, '/signin'),
 /// )
 /// ```
-class ThunderIDCallback extends StatelessWidget {
+class Callback extends StatelessWidget {
   final String url;
   final void Function(User user)? onSuccess;
   final void Function(Object error)? onError;
   final Widget? loadingIndicator;
 
-  const ThunderIDCallback({
+  const Callback({
     super.key,
     required this.url,
     this.onSuccess,
@@ -32,7 +32,7 @@ class ThunderIDCallback extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = ThunderIDProvider.of(context);
-    return BaseThunderIDCallback(
+    return BaseCallback(
       url: url,
       onSuccess: onSuccess,
       onError: onError,
@@ -48,13 +48,13 @@ class ThunderIDCallback extends StatelessWidget {
 }
 
 /// Unstyled base variant (spec §8.2).
-class BaseThunderIDCallback extends StatefulWidget {
+class BaseCallback extends StatefulWidget {
   final String url;
   final void Function(User user)? onSuccess;
   final void Function(Object error)? onError;
   final Widget Function(BuildContext context, bool isLoading, Object? error) builder;
 
-  const BaseThunderIDCallback({
+  const BaseCallback({
     super.key,
     required this.url,
     required this.builder,
@@ -63,10 +63,10 @@ class BaseThunderIDCallback extends StatefulWidget {
   });
 
   @override
-  State<BaseThunderIDCallback> createState() => _BaseThunderIDCallbackState();
+  State<BaseCallback> createState() => _BaseCallbackState();
 }
 
-class _BaseThunderIDCallbackState extends State<BaseThunderIDCallback> {
+class _BaseCallbackState extends State<BaseCallback> {
   bool _isLoading = true;
   Object? _error;
 

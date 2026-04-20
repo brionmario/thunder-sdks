@@ -263,58 +263,6 @@ public final class ThunderIDClient {
         return updated
     }
 
-    // MARK: - Organizations
-
-    public func getAllOrganizations(options: [String: Any]? = nil, sessionId: String? = nil) async throws -> AllOrganizationsResponse {
-        try requireInitialized()
-        return try await httpClient!.get(path: "/api/server/v1/organizations")
-    }
-
-    public func getMyOrganizations(options: [String: Any]? = nil, sessionId: String? = nil) async throws -> [Organization] {
-        try requireInitialized()
-        let response: AllOrganizationsResponse = try await httpClient!.get(path: "/api/server/v1/organizations/me")
-        return response.organizations
-    }
-
-    public func getCurrentOrganization(sessionId: String? = nil) async throws -> Organization? {
-        try requireInitialized()
-        guard let idToken = tokenStore?.idToken(),
-              let claims = try? decodeJwtToken(idToken) as [String: AnyCodable],
-              let orgId = claims["org_id"]?.value as? String,
-              let orgName = claims["org_name"]?.value as? String else {
-            return nil
-        }
-        return Organization(id: orgId, name: orgName)
-    }
-
-    public func createOrganization(name: String, handle: String? = nil, sessionId: String? = nil) async throws -> Organization {
-        try requireInitialized()
-        var body: [String: Any] = ["name": name]
-        if let handle { body["handle"] = handle }
-        return try await httpClient!.post(path: "/api/server/v1/organizations", body: body)
-    }
-
-    public func inviteUser(email: String, sessionId: String? = nil) async throws {
-        try requireInitialized()
-        let _: EmptyDecodable = try await httpClient!.post(
-            path: "/api/server/v1/organizations/me/invitations",
-            body: ["email": email]
-        )
-    }
-
-    public func switchOrganization(_ organization: Organization, sessionId: String? = nil) async throws -> TokenResponse {
-        try requireInitialized()
-        guard let accessToken = tokenStore?.accessToken() else {
-            throw IAMError(code: .sessionExpired, message: "No active session")
-        }
-        let exchangeConfig = TokenExchangeRequestConfig(
-            subjectToken: accessToken,
-            subjectTokenType: "urn:ietf:params:oauth:token-type:access_token",
-            audience: organization.id
-        )
-        return try await exchangeToken(config: exchangeConfig)
-    }
-
     // MARK: - Flow Meta
 
     public func getFlowMeta(applicationId: String, language: String = "en-US") async throws -> [String: Any] {

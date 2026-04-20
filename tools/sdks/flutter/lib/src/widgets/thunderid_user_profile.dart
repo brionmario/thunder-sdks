@@ -1,14 +1,14 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'thunderid_provider.dart';
-import '../models/user_profile.dart';
+import '../models/user_profile.dart' as model;
 
 /// Read-only profile view built from the decoded access token.
-class ThunderIDUserProfile extends StatelessWidget {
+class UserProfile extends StatelessWidget {
   final VoidCallback? onSaved;
   final VoidCallback? onError;
 
-  const ThunderIDUserProfile({super.key, this.onSaved, this.onError});
+  const UserProfile({super.key, this.onSaved, this.onError});
 
   static const _labels = <String, String>{
     'sub': 'User ID',
@@ -25,7 +25,7 @@ class ThunderIDUserProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final tt = Theme.of(context).textTheme;
-    return BaseThunderIDUserProfile(
+    return BaseUserProfile(
       onSaved: onSaved,
       onError: onError,
       builder: (ctx, profile, controllers, isLoading, error, save) {
@@ -85,19 +85,19 @@ class _ClaimRow extends StatelessWidget {
 }
 
 /// Unstyled base variant (spec §8.3).
-class BaseThunderIDUserProfile extends StatefulWidget {
+class BaseUserProfile extends StatefulWidget {
   final VoidCallback? onSaved;
   final VoidCallback? onError;
   final Widget Function(
     BuildContext context,
-    UserProfile? profile,
+    model.UserProfile? profile,
     Map<String, TextEditingController> controllers,
     bool isLoading,
     String? error,
     VoidCallback save,
   ) builder;
 
-  const BaseThunderIDUserProfile({
+  const BaseUserProfile({
     super.key,
     required this.builder,
     this.onSaved,
@@ -105,11 +105,11 @@ class BaseThunderIDUserProfile extends StatefulWidget {
   });
 
   @override
-  State<BaseThunderIDUserProfile> createState() => _BaseThunderIDUserProfileState();
+  State<BaseUserProfile> createState() => _BaseUserProfileState();
 }
 
-class _BaseThunderIDUserProfileState extends State<BaseThunderIDUserProfile> {
-  UserProfile? _profile;
+class _BaseUserProfileState extends State<BaseUserProfile> {
+  model.UserProfile? _profile;
   final _controllers = <String, TextEditingController>{};
   bool _isLoading = false;
   String? _error;
@@ -143,7 +143,7 @@ class _BaseThunderIDUserProfileState extends State<BaseThunderIDUserProfile> {
         for (final e in payload.entries)
           if (!_hiddenClaims.contains(e.key)) e.key: e.value,
       };
-      final profile = UserProfile(id: payload['sub'] as String? ?? '', claims: profileClaims);
+      final profile = model.UserProfile(id: payload['sub'] as String? ?? '', claims: profileClaims);
       for (final entry in profileClaims.entries) {
         _controllers.putIfAbsent(
             entry.key, () => TextEditingController(text: entry.value?.toString() ?? ''));

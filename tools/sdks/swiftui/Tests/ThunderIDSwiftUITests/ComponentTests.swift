@@ -50,8 +50,7 @@ final class ComponentTests: XCTestCase {
         let requiredKeys = [
             "signIn.button", "signOut.button", "signUp.button",
             "userProfile.title", "userProfile.save",
-            "organizationList.empty", "createOrganization.submit",
-            "languageSwitcher.title", "acceptInvite.submit", "inviteUser.submit",
+            "languageSwitcher.title",
         ]
         for key in requiredKeys {
             XCTAssertNotNil(DefaultStrings.all[key], "Missing default string for key: \(key)")

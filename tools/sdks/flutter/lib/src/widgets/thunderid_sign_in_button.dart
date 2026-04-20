@@ -5,12 +5,12 @@ import 'thunderid_provider.dart';
 ///
 /// Triggers the sign-in flow and rebuilds on authentication state changes.
 /// WCAG 2.1 AA compliant: minimum 44x44 tap target, semantic label (spec §8).
-class ThunderIDSignInButton extends StatelessWidget {
+class SignInButton extends StatelessWidget {
   final String label;
   final VoidCallback? onSignInComplete;
   final VoidCallback? onError;
 
-  const ThunderIDSignInButton({
+  const SignInButton({
     super.key,
     this.label = 'Sign In',
     this.onSignInComplete,
@@ -46,12 +46,12 @@ class ThunderIDSignInButton extends StatelessWidget {
 }
 
 /// Unstyled base variant — for full customization (spec §8.2 Base* components).
-class BaseThunderIDSignInButton extends StatelessWidget {
+class BaseSignInButton extends StatelessWidget {
   final WidgetBuilder builder;
   final VoidCallback? onSignInComplete;
   final VoidCallback? onError;
 
-  const BaseThunderIDSignInButton({
+  const BaseSignInButton({
     super.key,
     required this.builder,
     this.onSignInComplete,

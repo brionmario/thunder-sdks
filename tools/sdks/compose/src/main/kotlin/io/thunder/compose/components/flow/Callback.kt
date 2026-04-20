@@ -11,14 +11,14 @@ import io.thunder.compose.LocalThunder
  * Pass the callback URL received via intent / deep link to [url].
  */
 @Composable
-fun ThunderCallback(
+fun Callback(
     url: String,
     modifier: Modifier = Modifier,
     onComplete: (() -> Unit)? = null,
     onError: ((String) -> Unit)? = null,
 ) {
     val state = LocalThunder.current
-    BaseThunderCallback(url = url, modifier = modifier, onResult = { result ->
+    BaseCallback(url = url, modifier = modifier, onResult = { result ->
         result.onSuccess {
             onComplete?.invoke()
         }.onFailure { e ->
@@ -35,7 +35,7 @@ fun ThunderCallback(
 
 /** Unstyled base variant (spec §8.3). */
 @Composable
-fun BaseThunderCallback(
+fun BaseCallback(
     url: String,
     modifier: Modifier = Modifier,
     onResult: (Result<Unit>) -> Unit,

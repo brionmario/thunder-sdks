@@ -3,13 +3,13 @@ import 'thunderid_provider.dart';
 import '../models/user.dart';
 
 /// Read-only display of the authenticated user's name and avatar (spec §8.4 Presentation).
-class ThunderIDUser extends StatelessWidget {
-  const ThunderIDUser({super.key});
+class UserObject extends StatelessWidget {
+  const UserObject({super.key});
 
   @override
   Widget build(BuildContext context) {
     final state = ThunderIDProvider.of(context);
-    return BaseThunderIDUser(
+    return BaseUserObject(
       builder: (ctx, user) => _DefaultUserLayout(user: user, i18n: state.i18n),
     );
   }
@@ -69,10 +69,10 @@ class _Avatar extends StatelessWidget {
 }
 
 /// Unstyled base variant (spec §8.3).
-class BaseThunderIDUser extends StatelessWidget {
+class BaseUserObject extends StatelessWidget {
   final Widget Function(BuildContext context, User? user) builder;
 
-  const BaseThunderIDUser({super.key, required this.builder});
+  const BaseUserObject({super.key, required this.builder});
 
   @override
   Widget build(BuildContext context) {

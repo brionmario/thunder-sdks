@@ -3,7 +3,7 @@ import SwiftUI
 /// Handles the OAuth2 redirect callback URL after a browser-based flow (spec §8.4 Flow).
 ///
 /// Pass the callback URL received via onOpenURL / deep link to `url`.
-public struct ThunderCallback: View {
+public struct Callback: View {
     @EnvironmentObject private var state: ThunderState
     @EnvironmentObject private var i18n: ThunderI18n
     public let url: URL
@@ -17,7 +17,7 @@ public struct ThunderCallback: View {
     }
 
     public var body: some View {
-        BaseThunderCallback(url: url) { result in
+        BaseCallback(url: url) { result in
             switch result {
             case .success:
                 Task { await state.refresh() }
@@ -38,7 +38,7 @@ public struct ThunderCallback: View {
 }
 
 /// Unstyled base variant (spec §8.3).
-public struct BaseThunderCallback<Content: View>: View {
+public struct BaseCallback<Content: View>: View {
     @EnvironmentObject private var state: ThunderState
     public let url: URL
     public let onResult: (Result<Void, String>) -> Void

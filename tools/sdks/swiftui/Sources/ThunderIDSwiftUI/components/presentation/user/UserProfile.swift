@@ -2,7 +2,7 @@ import SwiftUI
 import ThunderID
 
 /// Editable user profile form. Calls getUserProfile() on appear, updateUserProfile() on save (spec §8.4).
-public struct ThunderUserProfile: View {
+public struct UserProfile: View {
     @EnvironmentObject private var i18n: ThunderI18n
     public let onSaved: (() -> Void)?
     public let onError: (() -> Void)?
@@ -13,7 +13,7 @@ public struct ThunderUserProfile: View {
     }
 
     public var body: some View {
-        BaseThunderUserProfile(onSaved: onSaved, onError: onError) { profile, fields, isLoading, error, save in
+        BaseUserProfile(onSaved: onSaved, onError: onError) { profile, fields, isLoading, error, save in
             VStack(alignment: .leading, spacing: 12) {
                 Text(i18n.resolve("userProfile.title"))
                     .accessibilityAddTraits(.isHeader)
@@ -41,7 +41,7 @@ public struct ThunderUserProfile: View {
 }
 
 /// Unstyled base variant (spec §8.3).
-public struct BaseThunderUserProfile<Content: View>: View {
+public struct BaseUserProfile<Content: View>: View {
     @EnvironmentObject private var state: ThunderState
     public let onSaved: (() -> Void)?
     public let onError: (() -> Void)?

@@ -14,15 +14,15 @@ import io.thunder.compose.LocalThunder
 
 /** Button that initiates the sign-up flow (spec §8.4 Actions). */
 @Composable
-fun ThunderSignUpButton(modifier: Modifier = Modifier, onTap: (() -> Unit)? = null) {
+fun SignUpButton(modifier: Modifier = Modifier, onTap: (() -> Unit)? = null) {
     val state = LocalThunder.current
     val label = state.i18n.resolve("signUp.button")
-    BaseThunderSignUpButton(label = label, modifier = modifier) { onTap?.invoke() }
+    BaseSignUpButton(label = label, modifier = modifier) { onTap?.invoke() }
 }
 
 /** Unstyled base variant (spec §8.3). */
 @Composable
-fun BaseThunderSignUpButton(
+fun BaseSignUpButton(
     label: String,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,

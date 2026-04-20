@@ -2,7 +2,7 @@ import SwiftUI
 import ThunderID
 
 /// App-native sign-up form. Drives the Flow Execution API registration loop (spec §8.4 Presentation).
-public struct ThunderSignUp: View {
+public struct SignUp: View {
     @EnvironmentObject private var state: ThunderState
     @EnvironmentObject private var i18n: ThunderI18n
     public let applicationId: String
@@ -20,7 +20,7 @@ public struct ThunderSignUp: View {
     }
 
     public var body: some View {
-        BaseThunderSignUp(applicationId: applicationId, onComplete: onComplete, onError: onError) { signUpState in
+        BaseSignUp(applicationId: applicationId, onComplete: onComplete, onError: onError) { signUpState in
             VStack(alignment: .leading, spacing: 12) {
                 Text(i18n.resolve("signUp.title"))
                     .accessibilityAddTraits(.isHeader)
@@ -54,9 +54,9 @@ public struct ThunderSignUp: View {
     }
 }
 
-/// Mutable state passed to the BaseThunderSignUp builder.
+/// Mutable state passed to the BaseSignUp builder.
 @MainActor
-public final class ThunderSignUpState: ObservableObject {
+public final class SignUpState: ObservableObject {
     @Published public private(set) var inputs: [FlowInput] = []
     @Published public private(set) var actions: [FlowAction] = []
     @Published public private(set) var isLoading: Bool = false
@@ -84,20 +84,20 @@ public final class ThunderSignUpState: ObservableObject {
 }
 
 /// Unstyled base variant (spec §8.3).
-public struct BaseThunderSignUp<Content: View>: View {
+public struct BaseSignUp<Content: View>: View {
     @EnvironmentObject private var state: ThunderState
     public let applicationId: String
     public let onComplete: (() -> Void)?
     public let onError: ((String) -> Void)?
-    public let content: (ThunderSignUpState) -> Content
+    public let content: (SignUpState) -> Content
 
-    @StateObject private var signUpState = ThunderSignUpState(submit: { _, _, _ in })
+    @StateObject private var signUpState = SignUpState(submit: { _, _, _ in })
 
     public init(
         applicationId: String,
         onComplete: (() -> Void)? = nil,
         onError: ((String) -> Void)? = nil,
-        @ViewBuilder content: @escaping (ThunderSignUpState) -> Content
+        @ViewBuilder content: @escaping (SignUpState) -> Content
     ) {
         self.applicationId = applicationId
         self.onComplete = onComplete

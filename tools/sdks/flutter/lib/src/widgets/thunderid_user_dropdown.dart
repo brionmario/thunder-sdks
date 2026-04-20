@@ -3,16 +3,16 @@ import 'thunderid_provider.dart';
 import '../models/user.dart';
 
 /// Avatar chip that opens a menu with profile and sign-out actions (spec §8.4 Presentation).
-class ThunderIDUserDropdown extends StatelessWidget {
+class UserDropdown extends StatelessWidget {
   final VoidCallback? onProfileTap;
   final VoidCallback? onSignOutComplete;
 
-  const ThunderIDUserDropdown({super.key, this.onProfileTap, this.onSignOutComplete});
+  const UserDropdown({super.key, this.onProfileTap, this.onSignOutComplete});
 
   @override
   Widget build(BuildContext context) {
     final state = ThunderIDProvider.of(context);
-    return BaseThunderIDUserDropdown(
+    return BaseUserDropdown(
       onProfileTap: onProfileTap,
       onSignOutComplete: onSignOutComplete,
       builder: (ctx, user, isOpen, toggle, signOut) => GestureDetector(
@@ -71,7 +71,7 @@ class ThunderIDUserDropdown extends StatelessWidget {
 }
 
 /// Unstyled base variant (spec §8.3).
-class BaseThunderIDUserDropdown extends StatefulWidget {
+class BaseUserDropdown extends StatefulWidget {
   final VoidCallback? onProfileTap;
   final VoidCallback? onSignOutComplete;
   final Widget Function(
@@ -82,7 +82,7 @@ class BaseThunderIDUserDropdown extends StatefulWidget {
     VoidCallback signOut,
   ) builder;
 
-  const BaseThunderIDUserDropdown({
+  const BaseUserDropdown({
     super.key,
     required this.builder,
     this.onProfileTap,
@@ -90,10 +90,10 @@ class BaseThunderIDUserDropdown extends StatefulWidget {
   });
 
   @override
-  State<BaseThunderIDUserDropdown> createState() => _BaseThunderIDUserDropdownState();
+  State<BaseUserDropdown> createState() => _BaseUserDropdownState();
 }
 
-class _BaseThunderIDUserDropdownState extends State<BaseThunderIDUserDropdown> {
+class _BaseUserDropdownState extends State<BaseUserDropdown> {
   bool _isOpen = false;
 
   @override

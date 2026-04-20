@@ -44,30 +44,6 @@ public struct UserProfile: Codable {
     }
 }
 
-public struct Organization: Codable {
-    public let id: String
-    public let name: String
-    public let handle: String?
-
-    public init(id: String, name: String, handle: String? = nil) {
-        self.id = id
-        self.name = name
-        self.handle = handle
-    }
-}
-
-public struct AllOrganizationsResponse: Codable {
-    public let organizations: [Organization]
-    public let totalCount: Int?
-    public let nextPage: String?
-
-    public init(organizations: [Organization], totalCount: Int? = nil, nextPage: String? = nil) {
-        self.organizations = organizations
-        self.totalCount = totalCount
-        self.nextPage = nextPage
-    }
-}
-
 public struct TokenResponse: Codable {
     public let accessToken: String
     public let tokenType: String

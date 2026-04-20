@@ -16,11 +16,11 @@ import kotlinx.coroutines.launch
 
 /** Button that calls signOut and refreshes auth state (spec §8.4 Actions). */
 @Composable
-fun ThunderSignOutButton(modifier: Modifier = Modifier, onSignOutComplete: (() -> Unit)? = null) {
+fun SignOutButton(modifier: Modifier = Modifier, onSignOutComplete: (() -> Unit)? = null) {
     val state = LocalThunder.current
     val scope = rememberCoroutineScope()
     val label = state.i18n.resolve("signOut.button")
-    BaseThunderSignOutButton(label = label, isLoading = state.isLoading, modifier = modifier) {
+    BaseSignOutButton(label = label, isLoading = state.isLoading, modifier = modifier) {
         scope.launch {
             runCatching { state.client.signOut() }
             state.refresh()
@@ -31,7 +31,7 @@ fun ThunderSignOutButton(modifier: Modifier = Modifier, onSignOutComplete: (() -
 
 /** Unstyled base variant (spec §8.3). */
 @Composable
-fun BaseThunderSignOutButton(
+fun BaseSignOutButton(
     label: String,
     isLoading: Boolean = false,
     modifier: Modifier = Modifier,

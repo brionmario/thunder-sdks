@@ -24,7 +24,7 @@ Welcome to the Flutter Quickstart guide! In this document, you will learn to bui
 ## What You Will Learn
 
 <TutorialHeroItem icon={<Boxes />}>Create a new Flutter app</TutorialHeroItem>
-<TutorialHeroItem icon={<Package />}>Install the <code>thunder_flutter</code> SDK</TutorialHeroItem>
+<TutorialHeroItem icon={<Package />}>Install the <code>thunderid_flutter</code> SDK</TutorialHeroItem>
 <TutorialHeroItem icon={<LogIn />}>Add user sign-in and sign-out</TutorialHeroItem>
 <TutorialHeroItem icon={<BookOpen />}>Display user profile information</TutorialHeroItem>
 
@@ -102,39 +102,67 @@ flutter run
 
 ## Install the Thunder Flutter SDK
 
-Add the `thunder_flutter` package to your `pubspec.yaml`:
+Add the `thunderid_flutter` package to your `pubspec.yaml`:
 
 ```yaml title="pubspec.yaml" showLineNumbers
 dependencies:
   flutter:
     sdk: flutter
-  thunder_flutter: ^0.1.0
-  url_launcher: ^6.2.0
-  app_links: ^6.0.0
+  thunderid_flutter: ^0.0.1
 ```
 
-Install the packages:
+Install the package:
 
 ```bash
 flutter pub get
 ```
 
-:::info
-`url_launcher` and `app_links` are used for redirect-based sign-in. If you are using embedded sign-in only, you can omit them.
-:::
+## Configure Platform Deep Links
+
+The SDK uses a custom URI scheme to return users to your app after sign-in. Configure the scheme on each platform.
+
+### Android
+
+Add an `intent-filter` inside the `<activity>` tag in `AndroidManifest.xml`:
+
+```xml title="android/app/src/main/AndroidManifest.xml" showLineNumbers
+<intent-filter>
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="myapp" android:host="callback" />
+</intent-filter>
+```
+
+### iOS
+
+Add a URL scheme entry to `ios/Runner/Info.plist`:
+
+```xml title="ios/Runner/Info.plist" showLineNumbers
+<key>CFBundleURLTypes</key>
+<array>
+    <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+            <string>myapp</string>
+        </array>
+    </dict>
+</array>
+```
 
 ## Configure the Thunder SDK
 
-The `ThunderProvider` widget initializes the SDK and makes authentication state available to the entire widget tree. Wrap your root widget with it in `main.dart`:
+The `ThunderIDProvider` widget initializes the SDK and makes authentication state available to the entire widget tree. Wrap your root widget with it in `main.dart`:
 
 ```dart title="lib/main.dart" showLineNumbers
 import 'package:flutter/material.dart';
-import 'package:thunder_flutter/thunder_flutter.dart';
+import 'package:thunderid_flutter/thunderid_flutter.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(
-    ThunderProvider(
-      config: ThunderConfig(
+    ThunderIDProvider(
+      config: ThunderIDConfig(
         baseUrl: 'https://localhost:8090',
         clientId: '<your-client-id>',
         applicationId: '<your-application-id>',
@@ -152,9 +180,9 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       title: 'Thunder Demo',
-      home: const HomeScreen(),
+      home: RootScreen(),
     );
   }
 }
@@ -175,242 +203,132 @@ Replace `<your-client-id>` and `<your-application-id>` with the values obtained 
 | `afterSignOutUrl` | The URI to navigate to after sign-out |
 | `scopes` | OAuth2 scopes to request (defaults to `['openid']`) |
 
-## Choose How Users Will Sign In
+## Add Auth-Aware Routing
 
-The Thunder Flutter SDK supports two sign-in approaches. Choose the one that best fits your application.
+Use `ThunderIDProvider.of(context)` to read auth state and route to the appropriate screen:
 
-### Option A: Redirect to Thunder
-
-In redirect mode, the SDK opens Thunder's hosted sign-in page in the device browser. This is the recommended approach as it supports all authentication methods configured in Thunder.
-
-**Step 1: Configure deep links**
-
-On **Android**, add an `intent-filter` to `AndroidManifest.xml`:
-
-```xml title="android/app/src/main/AndroidManifest.xml" showLineNumbers
-<activity android:name=".MainActivity" ... >
-    <intent-filter android:autoVerify="true">
-        <action android:name="android.intent.action.VIEW" />
-        <category android:name="android.intent.category.DEFAULT" />
-        <category android:name="android.intent.category.BROWSABLE" />
-        <data android:scheme="myapp" android:host="callback" />
-    </intent-filter>
-</activity>
-```
-
-On **iOS**, add a URL scheme to `Info.plist`:
-
-```xml title="ios/Runner/Info.plist" showLineNumbers
-<key>CFBundleURLTypes</key>
-<array>
-    <dict>
-        <key>CFBundleURLSchemes</key>
-        <array>
-            <string>myapp</string>
-        </array>
-    </dict>
-</array>
-```
-
-**Step 2: Launch the sign-in URL and handle the callback**
-
-```dart title="lib/home_screen.dart" showLineNumbers
+```dart title="lib/root_screen.dart" showLineNumbers
 import 'package:flutter/material.dart';
-import 'package:thunder_flutter/thunder_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:app_links/app_links.dart';
+import 'package:thunderid_flutter/thunderid_flutter.dart';
 
-class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key});
+import 'auth_screen.dart';
+import 'home_screen.dart';
 
-  @override
-  State<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends State<HomeScreen> {
-  final _appLinks = AppLinks();
-
-  @override
-  void initState() {
-    super.initState();
-    // Listen for deep link callbacks
-    _appLinks.uriLinkStream.listen((uri) {
-      if (uri.scheme == 'myapp' && uri.host == 'callback') {
-        _handleCallback(uri.toString());
-      }
-    });
-  }
-
-  Future<void> _signIn() async {
-    final thunder = ThunderProvider.of(context);
-    final url = await thunder.client.buildSignInUrl();
-    await launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
-  }
-
-  Future<void> _handleCallback(String url) async {
-    final thunder = ThunderProvider.of(context);
-    await thunder.client.handleRedirectCallback(url);
-    await thunder.refresh();
-  }
-
-  Future<void> _signOut() async {
-    final thunder = ThunderProvider.of(context);
-    await thunder.client.signOut();
-    await thunder.refresh();
-  }
+class RootScreen extends StatelessWidget {
+  const RootScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final thunder = ThunderProvider.of(context);
+    final thunder = ThunderIDProvider.of(context);
 
     if (thunder.isLoading) {
-      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
     }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Thunder Demo')),
-      body: Center(
-        child: thunder.isSignedIn
-            ? Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text('Welcome, ${thunder.user?.displayName ?? 'User'}!'),
-                  TextButton(onPressed: _signOut, child: const Text('Sign Out')),
-                ],
-              )
-            : ElevatedButton(
-                onPressed: _signIn,
-                child: const Text('Sign In'),
-              ),
-      ),
-    );
+    if (thunder.error != null) {
+      return Scaffold(
+        body: Center(child: Text('Configuration error: ${thunder.error}')),
+      );
+    }
+
+    return thunder.isSignedIn ? const HomeScreen() : const AuthScreen();
   }
 }
 ```
 
-### Option B: Embedded Sign-In
+## Add Sign-In and Sign-Up
 
-In embedded mode, users enter their credentials directly in your app without any browser redirect. This gives you full control over the sign-in UI.
+The SDK provides ready-made `SignIn` and `SignUp` widgets that handle the full authentication flow. Render either one depending on the mode the user selects:
 
-```dart title="lib/sign_in_screen.dart" showLineNumbers
+```dart title="lib/auth_screen.dart" showLineNumbers
 import 'package:flutter/material.dart';
-import 'package:thunder_flutter/thunder_flutter.dart';
+import 'package:thunderid_flutter/thunderid_flutter.dart';
 
-class SignInScreen extends StatefulWidget {
-  const SignInScreen({super.key});
+enum _AuthMode { signIn, signUp }
+
+class AuthScreen extends StatefulWidget {
+  const AuthScreen({super.key});
 
   @override
-  State<SignInScreen> createState() => _SignInScreenState();
+  State<AuthScreen> createState() => _AuthScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
-  final _usernameController = TextEditingController();
-  final _passwordController = TextEditingController();
-  String? _errorMessage;
-
-  Future<void> _signIn() async {
-    final thunder = ThunderProvider.of(context);
-    setState(() => _errorMessage = null);
-
-    try {
-      // Step 1: Initiate the flow
-      final initResponse = await thunder.client.signIn(
-        payload: EmbeddedSignInPayload(actionId: 'init'),
-        request: EmbeddedFlowRequestConfig(applicationId: '<your-application-id>'),
-      );
-
-      // Step 2: Submit credentials
-      final result = await thunder.client.signIn(
-        payload: EmbeddedSignInPayload(
-          flowId: initResponse.flowId,
-          actionId: 'basic_auth',
-          inputs: {
-            'username': _usernameController.text,
-            'password': _passwordController.text,
-          },
-        ),
-        request: EmbeddedFlowRequestConfig(applicationId: '<your-application-id>'),
-      );
-
-      if (result.flowStatus == FlowStatus.complete) {
-        await thunder.refresh();
-      }
-    } on IAMException catch (e) {
-      setState(() => _errorMessage = e.message);
-    }
-  }
+class _AuthScreenState extends State<AuthScreen> {
+  _AuthMode _mode = _AuthMode.signIn;
 
   @override
   Widget build(BuildContext context) {
+    final applicationId = ThunderIDProvider.of(context).client.config.applicationId!;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Sign In')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          children: [
-            TextField(
-              controller: _usernameController,
-              decoration: const InputDecoration(labelText: 'Username'),
-            ),
-            TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Password'),
-            ),
-            if (_errorMessage != null)
-              Text(_errorMessage!, style: const TextStyle(color: Colors.red)),
-            const SizedBox(height: 16),
-            ElevatedButton(onPressed: _signIn, child: const Text('Sign In')),
-          ],
+      body: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              SegmentedButton<_AuthMode>(
+                segments: const [
+                  ButtonSegment(value: _AuthMode.signIn, label: Text('Sign In')),
+                  ButtonSegment(value: _AuthMode.signUp, label: Text('Sign Up')),
+                ],
+                selected: {_mode},
+                onSelectionChanged: (value) =>
+                    setState(() => _mode = value.first),
+              ),
+              const SizedBox(height: 24),
+              if (_mode == _AuthMode.signIn)
+                SignIn(applicationId: applicationId)
+              else
+                SignUp(applicationId: applicationId),
+            ],
+          ),
         ),
       ),
     );
   }
 }
 ```
+
+`SignIn` and `SignUp` manage the full flow — collecting credentials, communicating with Thunder, exchanging tokens, and updating auth state. When sign-in completes, `thunder.isSignedIn` becomes `true` and `RootScreen` automatically navigates to `HomeScreen`.
 
 ## Display User Profile
 
-After sign-in, access the user through `ThunderProvider.of(context).user`:
+After sign-in, access the current user through `ThunderIDProvider.of(context).user`:
 
-```dart title="lib/profile_screen.dart" showLineNumbers
+```dart title="lib/home_screen.dart" showLineNumbers
 import 'package:flutter/material.dart';
-import 'package:thunder_flutter/thunder_flutter.dart';
+import 'package:thunderid_flutter/thunderid_flutter.dart';
 
-class ProfileScreen extends StatelessWidget {
-  const ProfileScreen({super.key});
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final thunder = ThunderProvider.of(context);
+    final thunder = ThunderIDProvider.of(context);
     final user = thunder.user;
 
-    if (user == null) return const SizedBox.shrink();
-
     return Scaffold(
-      appBar: AppBar(title: const Text('Profile')),
+      appBar: AppBar(
+        title: const Text('Thunder Demo'),
+        actions: [
+          ThunderIDSignOutButton(),
+        ],
+      ),
       body: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(24),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              'Welcome, ${user.displayName ?? user.username ?? 'User'}!',
+              'Welcome, ${user?.claims?['given_name'] ?? user?.displayName ?? 'User'}!',
               style: Theme.of(context).textTheme.headlineSmall,
             ),
-            if (user.email != null) ...[
+            if (user?.email != null) ...[
               const SizedBox(height: 8),
-              Text('Email: ${user.email}'),
+              Text('Email: ${user!.email}'),
             ],
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () async {
-                await thunder.client.signOut();
-                await thunder.refresh();
-              },
-              style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-              child: const Text('Sign Out'),
-            ),
           ],
         ),
       ),
@@ -418,6 +336,17 @@ class ProfileScreen extends StatelessWidget {
   }
 }
 ```
+
+### User Object Properties
+
+| Property | Description |
+|----------|-------------|
+| `user.sub` | Subject identifier (user ID) |
+| `user.username` | Username |
+| `user.email` | Email address |
+| `user.displayName` | Display name |
+| `user.profilePicture` | Profile picture URL |
+| `user.claims` | Full ID token claims map (e.g. `given_name`, `family_name`) |
 
 ## Run Your App
 
@@ -428,7 +357,7 @@ flutter run
 ```
 
 :::tip Success
-You should now see your app with a sign-in button. Tap it to authenticate with Thunder!
+You should now see your app with a sign-in form. Enter your credentials to authenticate with Thunder!
 :::
 
 </Stepper>

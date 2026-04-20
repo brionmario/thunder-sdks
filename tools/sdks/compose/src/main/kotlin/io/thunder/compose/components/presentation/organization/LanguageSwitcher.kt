@@ -12,12 +12,12 @@ import io.thunder.compose.LocalThunder
 
 /** Locale picker that updates the active language for component labels (spec §8.4 Presentation). */
 @Composable
-fun ThunderLanguageSwitcher(
+fun LanguageSwitcher(
     locales: List<String> = emptyList(),
     modifier: Modifier = Modifier,
 ) {
     val state = LocalThunder.current
-    BaseThunderLanguageSwitcher(locales = locales, modifier = modifier) { available, active, select ->
+    BaseLanguageSwitcher(locales = locales, modifier = modifier) { available, active, select ->
         Column {
             available.forEach { locale ->
                 BasicText(
@@ -37,7 +37,7 @@ fun ThunderLanguageSwitcher(
 
 /** Unstyled base variant (spec §8.3). */
 @Composable
-fun BaseThunderLanguageSwitcher(
+fun BaseLanguageSwitcher(
     locales: List<String> = emptyList(),
     modifier: Modifier = Modifier,
     content: @Composable (available: List<String>, active: String, select: (String) -> Unit) -> Unit,

@@ -5,17 +5,17 @@ import '../models/flow_models.dart';
 import '../models/token_exchange_config.dart';
 
 /// Full registration form driving the REGISTRATION flow (spec §8.4 Presentation).
-class ThunderIDSignUp extends StatelessWidget {
+class SignUp extends StatelessWidget {
   final String applicationId;
   final VoidCallback? onSuccess;
   final VoidCallback? onError;
 
-  const ThunderIDSignUp({super.key, required this.applicationId, this.onSuccess, this.onError});
+  const SignUp({super.key, required this.applicationId, this.onSuccess, this.onError});
 
   @override
   Widget build(BuildContext context) {
     final state = ThunderIDProvider.of(context);
-    return BaseThunderIDSignUp(
+    return BaseSignUp(
       applicationId: applicationId,
       onSuccess: onSuccess,
       onError: onError,
@@ -46,13 +46,13 @@ class _FlowState {
 }
 
 /// Unstyled base variant (spec §8.3).
-class BaseThunderIDSignUp extends StatefulWidget {
+class BaseSignUp extends StatefulWidget {
   final String applicationId;
   final VoidCallback? onSuccess;
   final VoidCallback? onError;
   final Widget Function(BuildContext context, _FlowState state) builder;
 
-  const BaseThunderIDSignUp({
+  const BaseSignUp({
     super.key,
     required this.applicationId,
     required this.builder,
@@ -61,10 +61,10 @@ class BaseThunderIDSignUp extends StatefulWidget {
   });
 
   @override
-  State<BaseThunderIDSignUp> createState() => _BaseThunderIDSignUpState();
+  State<BaseSignUp> createState() => _BaseSignUpState();
 }
 
-class _BaseThunderIDSignUpState extends State<BaseThunderIDSignUp> {
+class _BaseSignUpState extends State<BaseSignUp> {
   EmbeddedFlowResponse? _currentStep;
   bool _isLoading = false;
   String? _error;

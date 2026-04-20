@@ -14,17 +14,17 @@ import io.thunder.compose.LocalThunder
 
 /** Tappable button that starts the redirect-based sign-in flow (spec §8.4 Actions). */
 @Composable
-fun ThunderSignInButton(modifier: Modifier = Modifier, onTap: (() -> Unit)? = null) {
+fun SignInButton(modifier: Modifier = Modifier, onTap: (() -> Unit)? = null) {
     val state = LocalThunder.current
     val label = state.i18n.resolve("signIn.button")
-    BaseThunderSignInButton(label = label, isLoading = state.isLoading, modifier = modifier) {
+    BaseSignInButton(label = label, isLoading = state.isLoading, modifier = modifier) {
         onTap?.invoke()
     }
 }
 
 /** Unstyled base variant (spec §8.3). */
 @Composable
-fun BaseThunderSignInButton(
+fun BaseSignInButton(
     label: String,
     isLoading: Boolean = false,
     modifier: Modifier = Modifier,

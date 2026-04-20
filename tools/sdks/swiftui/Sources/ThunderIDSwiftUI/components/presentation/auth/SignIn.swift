@@ -2,7 +2,7 @@ import SwiftUI
 import ThunderID
 
 /// Full app-native sign-in form. Drives the Flow Execution API loop (spec §8.4 Presentation).
-public struct ThunderSignIn: View {
+public struct SignIn: View {
     @EnvironmentObject private var state: ThunderState
     @EnvironmentObject private var i18n: ThunderI18n
     public let applicationId: String
@@ -20,7 +20,7 @@ public struct ThunderSignIn: View {
     }
 
     public var body: some View {
-        BaseThunderSignIn(applicationId: applicationId, onComplete: onComplete, onError: onError) { signInState in
+        BaseSignIn(applicationId: applicationId, onComplete: onComplete, onError: onError) { signInState in
             VStack(alignment: .leading, spacing: 12) {
                 Text(i18n.resolve("signIn.title"))
                     .accessibilityAddTraits(.isHeader)
@@ -55,9 +55,9 @@ public struct ThunderSignIn: View {
     }
 }
 
-/// State container passed to the BaseThunderSignIn builder.
+/// State container passed to the BaseSignIn builder.
 @MainActor
-public final class ThunderSignInState: ObservableObject {
+public final class SignInState: ObservableObject {
     @Published public private(set) var inputs: [FlowInput] = []
     @Published public private(set) var actions: [FlowAction] = []
     @Published public private(set) var isLoading: Bool = false
@@ -90,20 +90,20 @@ public final class ThunderSignInState: ObservableObject {
 }
 
 /// Unstyled base variant (spec §8.3).
-public struct BaseThunderSignIn<Content: View>: View {
+public struct BaseSignIn<Content: View>: View {
     @EnvironmentObject private var state: ThunderState
     public let applicationId: String
     public let onComplete: (() -> Void)?
     public let onError: ((String) -> Void)?
-    public let content: (ThunderSignInState) -> Content
+    public let content: (SignInState) -> Content
 
-    @StateObject private var signInState = ThunderSignInState(submit: { _, _, _ in })
+    @StateObject private var signInState = SignInState(submit: { _, _, _ in })
 
     public init(
         applicationId: String,
         onComplete: (() -> Void)? = nil,
         onError: ((String) -> Void)? = nil,
-        @ViewBuilder content: @escaping (ThunderSignInState) -> Content
+        @ViewBuilder content: @escaping (SignInState) -> Content
     ) {
         self.applicationId = applicationId
         self.onComplete = onComplete

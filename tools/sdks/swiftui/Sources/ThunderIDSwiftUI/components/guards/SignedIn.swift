@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Renders `content` only when the user is authenticated (spec §8.4 Guards).
-public struct ThunderSignedIn<Content: View, Fallback: View>: View {
+public struct SignedIn<Content: View, Fallback: View>: View {
     @EnvironmentObject private var state: ThunderState
     private let content: Content
     private let fallback: Fallback
@@ -23,7 +23,7 @@ public struct ThunderSignedIn<Content: View, Fallback: View>: View {
     }
 }
 
-public extension ThunderSignedIn where Fallback == EmptyView {
+public extension SignedIn where Fallback == EmptyView {
     init(@ViewBuilder content: () -> Content) {
         self.init(content: content, fallback: { EmptyView() })
     }

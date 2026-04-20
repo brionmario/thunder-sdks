@@ -13,7 +13,7 @@ import ThunderID
 
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         let args = call.arguments as? [String: Any] ?? [:]
-        Task {
+        Task { @MainActor [handler] in
             await handler.handle(method: call.method, args: args, result: result)
         }
     }

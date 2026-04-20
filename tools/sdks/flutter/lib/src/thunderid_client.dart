@@ -3,7 +3,6 @@ import 'models/iam_error.dart';
 import 'models/thunderid_config.dart';
 import 'models/user.dart';
 import 'models/user_profile.dart';
-import 'models/organization.dart';
 import 'models/token_response.dart';
 import 'models/flow_models.dart';
 import 'models/sign_in_options.dart';
@@ -176,59 +175,6 @@ class ThunderIDClient {
       if (userId != null) 'userId': userId,
     });
     return User.fromMap(result);
-  }
-
-  // ── Organizations ─────────────────────────────────────────────────────────
-
-  Future<AllOrganizationsResponse> getAllOrganizations({
-    Map<String, dynamic>? options,
-    String? sessionId,
-  }) async {
-    _requireInitialized();
-    final result = await _channel.invokeMap('getAllOrganizations', {
-      if (options != null) ...options,
-      if (sessionId != null) 'sessionId': sessionId,
-    });
-    return AllOrganizationsResponse.fromMap(result);
-  }
-
-  Future<List<Organization>> getMyOrganizations({String? sessionId}) async {
-    _requireInitialized();
-    final result = await _channel.invokeList('getMyOrganizations', {
-      if (sessionId != null) 'sessionId': sessionId,
-    });
-    return result.map((o) => Organization.fromMap(o as Map)).toList();
-  }
-
-  Future<Organization?> getCurrentOrganization({String? sessionId}) async {
-    _requireInitialized();
-    final result = await _channel.invoke<Map>('getCurrentOrganization', {
-      if (sessionId != null) 'sessionId': sessionId,
-    });
-    return result != null ? Organization.fromMap(result) : null;
-  }
-
-  Future<Organization> createOrganization({
-    required String name,
-    String? handle,
-    String? sessionId,
-  }) async {
-    _requireInitialized();
-    final result = await _channel.invokeMap('createOrganization', {
-      'name': name,
-      if (handle != null) 'handle': handle,
-      if (sessionId != null) 'sessionId': sessionId,
-    });
-    return Organization.fromMap(result);
-  }
-
-  Future<TokenResponse> switchOrganization(Organization organization, {String? sessionId}) async {
-    _requireInitialized();
-    final result = await _channel.invokeMap('switchOrganization', {
-      'organization': organization.toMap(),
-      if (sessionId != null) 'sessionId': sessionId,
-    });
-    return TokenResponse.fromMap(result);
   }
 
   // ── Flow Meta ─────────────────────────────────────────────────────────────

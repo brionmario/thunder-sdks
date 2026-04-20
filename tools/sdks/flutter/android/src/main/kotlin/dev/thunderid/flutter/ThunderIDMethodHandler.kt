@@ -88,25 +88,6 @@ class ThunderIDMethodHandler(private val context: Context) {
                     val user = client.updateUserProfile(payload, args["userId"] as? String)
                     result.success(encodeUser(user))
                 }
-                "getAllOrganizations" -> {
-                    val response = client.getAllOrganizations()
-                    result.success(mapOf(
-                        "organizations" to response.organizations.map { encodeOrganization(it) },
-                        "totalCount" to response.totalCount
-                    ))
-                }
-                "getMyOrganizations" -> {
-                    result.success(client.getMyOrganizations().map { encodeOrganization(it) })
-                }
-                "getCurrentOrganization" -> {
-                    result.success(client.getCurrentOrganization()?.let { encodeOrganization(it) })
-                }
-                "switchOrganization" -> {
-                    @Suppress("UNCHECKED_CAST")
-                    val orgMap = args["organization"] as? Map<String, Any?> ?: emptyMap()
-                    val org = Organization(id = orgMap["id"] as? String ?: "", name = orgMap["name"] as? String ?: "")
-                    result.success(encodeTokenResponse(client.switchOrganization(org)))
-                }
                 "getFlowMeta" -> {
                     val appId = args["applicationId"] as? String ?: ""
                     val language = args["language"] as? String ?: "en-US"
@@ -198,8 +179,6 @@ class ThunderIDMethodHandler(private val context: Context) {
         },
         "meta" to data.meta
     )
-
-    private fun encodeOrganization(o: Organization) = mapOf("id" to o.id, "name" to o.name, "handle" to o.handle)
 
     private fun encodeTokenResponse(r: TokenResponse) = mapOf(
         "accessToken" to r.accessToken, "tokenType" to r.tokenType,

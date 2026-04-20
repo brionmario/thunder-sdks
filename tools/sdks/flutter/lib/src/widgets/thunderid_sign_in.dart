@@ -23,12 +23,12 @@ class ThunderIDSignInState {
 
 /// Full sign-in form that drives the Flow Execution API loop (spec §8.4 Presentation).
 /// Renders each step's inputs dynamically based on server-reported [FlowStepData].
-class ThunderIDSignIn extends StatelessWidget {
+class SignIn extends StatelessWidget {
   final String applicationId;
   final void Function(User user)? onSuccess;
   final VoidCallback? onError;
 
-  const ThunderIDSignIn({
+  const SignIn({
     super.key,
     required this.applicationId,
     this.onSuccess,
@@ -38,7 +38,7 @@ class ThunderIDSignIn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = ThunderIDProvider.of(context);
-    return BaseThunderIDSignIn(
+    return BaseSignIn(
       applicationId: applicationId,
       onSuccess: onSuccess,
       onError: onError,
@@ -55,13 +55,13 @@ class ThunderIDSignIn extends StatelessWidget {
 }
 
 /// Unstyled base variant. [builder] receives [ThunderIDSignInState] to render any UI (spec §8.3).
-class BaseThunderIDSignIn extends StatefulWidget {
+class BaseSignIn extends StatefulWidget {
   final String applicationId;
   final void Function(User user)? onSuccess;
   final VoidCallback? onError;
   final Widget Function(BuildContext context, ThunderIDSignInState state) builder;
 
-  const BaseThunderIDSignIn({
+  const BaseSignIn({
     super.key,
     required this.applicationId,
     required this.builder,
@@ -70,10 +70,10 @@ class BaseThunderIDSignIn extends StatefulWidget {
   });
 
   @override
-  State<BaseThunderIDSignIn> createState() => _BaseThunderIDSignInState();
+  State<BaseSignIn> createState() => _BaseSignInState();
 }
 
-class _BaseThunderIDSignInState extends State<BaseThunderIDSignIn> {
+class _BaseSignInState extends State<BaseSignIn> {
   EmbeddedFlowResponse? _currentStep;
   bool _isLoading = false;
   String? _error;

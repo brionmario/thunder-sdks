@@ -11,12 +11,12 @@ import androidx.compose.ui.unit.dp
 import io.thunder.android.*
 import io.thunder.compose.LocalThunder
 import io.thunder.compose.ThunderState
-import io.thunder.compose.components.actions.BaseThunderSignUpButton
+import io.thunder.compose.components.actions.BaseSignUpButton
 import kotlinx.coroutines.launch
 
-/** State passed to the [BaseThunderSignUp] builder slot. */
+/** State passed to the [BaseSignUp] builder slot. */
 @Stable
-class ThunderSignUpState {
+class SignUpState {
     var inputs by mutableStateOf<List<FlowInput>>(emptyList())
         internal set
     var actions by mutableStateOf<List<FlowAction>>(emptyList())
@@ -44,14 +44,14 @@ class ThunderSignUpState {
 
 /** App-native sign-up form (spec §8.4 Presentation). */
 @Composable
-fun ThunderSignUp(
+fun SignUp(
     modifier: Modifier = Modifier,
     onComplete: (() -> Unit)? = null,
     onError: ((String) -> Unit)? = null,
 ) {
     val thunderState = LocalThunder.current
     val i18n = thunderState.i18n
-    BaseThunderSignUp(modifier = modifier, onComplete = onComplete, onError = onError) { state ->
+    BaseSignUp(modifier = modifier, onComplete = onComplete, onError = onError) { state ->
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             BasicText(i18n.resolve("signUp.title"))
             state.error?.let { BasicText(it) }
@@ -64,7 +64,7 @@ fun ThunderSignUp(
                 )
             }
             state.actions.forEach { action ->
-                BaseThunderSignUpButton(label = action.label ?: i18n.resolve("signUp.submit")) {
+                BaseSignUpButton(label = action.label ?: i18n.resolve("signUp.submit")) {
                     state.submit(action.id)
                 }
             }
@@ -75,15 +75,15 @@ fun ThunderSignUp(
 
 /** Unstyled base variant (spec §8.3). */
 @Composable
-fun BaseThunderSignUp(
+fun BaseSignUp(
     modifier: Modifier = Modifier,
     onComplete: (() -> Unit)? = null,
     onError: ((String) -> Unit)? = null,
-    content: @Composable (ThunderSignUpState) -> Unit,
+    content: @Composable (SignUpState) -> Unit,
 ) {
     val thunderState = LocalThunder.current
     val scope = rememberCoroutineScope()
-    val signUpState = remember { ThunderSignUpState() }
+    val signUpState = remember { SignUpState() }
 
     signUpState.onSubmit = { actionId ->
         scope.launch {
@@ -115,7 +115,7 @@ fun BaseThunderSignUp(
 
 private suspend fun handleSignUpResponse(
     response: EmbeddedFlowResponse,
-    state: ThunderSignUpState,
+    state: SignUpState,
     thunderState: ThunderState,
     onComplete: (() -> Unit)?,
     onError: ((String) -> Unit)?,

@@ -4,18 +4,18 @@ import '../models/sign_up_options.dart';
 import '../models/flow_models.dart';
 
 /// Initiates the sign-up flow on tap (spec §8.4 Actions).
-class ThunderIDSignUpButton extends StatelessWidget {
+class SignUpButton extends StatelessWidget {
   final SignUpOptions? options;
   final void Function(EmbeddedFlowResponse)? onFlowStarted;
   final VoidCallback? onError;
 
-  const ThunderIDSignUpButton({super.key, this.options, this.onFlowStarted, this.onError});
+  const SignUpButton({super.key, this.options, this.onFlowStarted, this.onError});
 
   @override
   Widget build(BuildContext context) {
     final state = ThunderIDProvider.of(context);
     final label = state.i18n.resolve('signUp.button');
-    return BaseThunderIDSignUpButton(
+    return BaseSignUpButton(
       options: options,
       onFlowStarted: onFlowStarted,
       onError: onError,
@@ -45,13 +45,13 @@ class ThunderIDSignUpButton extends StatelessWidget {
 }
 
 /// Unstyled base variant (spec §8.2).
-class BaseThunderIDSignUpButton extends StatefulWidget {
+class BaseSignUpButton extends StatefulWidget {
   final SignUpOptions? options;
   final void Function(EmbeddedFlowResponse)? onFlowStarted;
   final VoidCallback? onError;
   final Widget Function(BuildContext context, bool isLoading) builder;
 
-  const BaseThunderIDSignUpButton({
+  const BaseSignUpButton({
     super.key,
     required this.builder,
     this.options,
@@ -60,10 +60,10 @@ class BaseThunderIDSignUpButton extends StatefulWidget {
   });
 
   @override
-  State<BaseThunderIDSignUpButton> createState() => _BaseThunderIDSignUpButtonState();
+  State<BaseSignUpButton> createState() => _BaseSignUpButtonState();
 }
 
-class _BaseThunderIDSignUpButtonState extends State<BaseThunderIDSignUpButton> {
+class _BaseSignUpButtonState extends State<BaseSignUpButton> {
   bool _isLoading = false;
 
   @override

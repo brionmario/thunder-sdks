@@ -1,15 +1,14 @@
 /// ThunderID Flutter SDK.
 ///
-/// Provides identity management (sign-in, sign-up, token management, user profile,
-/// organizations) for Flutter apps by bridging to the native iOS and Android
+/// Provides identity management (sign-in, sign-up, token management, user profile)
+/// for Flutter apps by bridging to the native iOS and Android
 /// ThunderID Platform SDKs via Flutter platform channels.
 library thunderid_flutter;
 
 export 'src/thunderid_client.dart';
 export 'src/models/thunderid_config.dart';
 export 'src/models/user.dart';
-export 'src/models/user_profile.dart';
-export 'src/models/organization.dart';
+export 'src/models/user_profile.dart' hide UserProfile;
 export 'src/models/token_response.dart';
 export 'src/models/iam_error.dart';
 export 'src/models/flow_models.dart';
@@ -28,15 +27,8 @@ export 'src/widgets/thunderid_signed_out.dart';
 export 'src/widgets/thunderid_loading.dart';
 export 'src/widgets/thunderid_sign_in.dart';
 export 'src/widgets/thunderid_sign_up.dart';
-export 'src/widgets/thunderid_accept_invite.dart';
-export 'src/widgets/thunderid_invite_user.dart';
 export 'src/widgets/thunderid_user.dart';
 export 'src/widgets/thunderid_user_dropdown.dart';
 export 'src/widgets/thunderid_user_profile.dart';
-export 'src/widgets/thunderid_organization.dart';
-export 'src/widgets/thunderid_organization_list.dart';
-export 'src/widgets/thunderid_organization_profile.dart';
-export 'src/widgets/thunderid_organization_switcher.dart';
-export 'src/widgets/thunderid_create_organization.dart';
 export 'src/widgets/thunderid_language_switcher.dart';
 export 'src/flow_template_resolver.dart';

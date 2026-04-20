@@ -514,7 +514,7 @@ class _ProfileTab extends StatelessWidget {
             const SizedBox(height: 12),
 
             // ── Sign out ──────────────────────────────────────────────────
-            BaseThunderIDSignOutButton(
+            BaseSignOutButton(
               builder: (ctx, isLoading) => OutlinedButton.icon(
                 onPressed: null,
                 icon: isLoading
@@ -549,7 +549,7 @@ class _ProfileTab extends StatelessWidget {
         builder: (ctx, controller) => SingleChildScrollView(
           controller: controller,
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-          child: ThunderIDUserProfile(
+          child: UserProfile(
             onSaved: () => Navigator.pop(ctx),
           ),
         ),

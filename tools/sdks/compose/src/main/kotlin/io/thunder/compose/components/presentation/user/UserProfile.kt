@@ -10,21 +10,21 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import io.thunder.android.UserProfile
 import io.thunder.compose.LocalThunder
-import io.thunder.compose.components.actions.BaseThunderSignInButton
+import io.thunder.compose.components.actions.BaseSignInButton
 import kotlinx.coroutines.launch
 
 private val editableKeys = listOf("displayName", "phoneNumbers")
 
 /** Editable user profile form (spec §8.4 Presentation). */
 @Composable
-fun ThunderUserProfile(
+fun UserProfile(
     modifier: Modifier = Modifier,
     onSaved: (() -> Unit)? = null,
     onError: (() -> Unit)? = null,
 ) {
     val state = LocalThunder.current
     val i18n = state.i18n
-    BaseThunderUserProfile(modifier = modifier, onSaved = onSaved, onError = onError) { profile, fields, isLoading, error, save ->
+    BaseUserProfile(modifier = modifier, onSaved = onSaved, onError = onError) { profile, fields, isLoading, error, save ->
         Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             BasicText(i18n.resolve("userProfile.title"))
             when {
@@ -39,7 +39,7 @@ fun ThunderUserProfile(
                                 .semantics { contentDescription = key },
                         )
                     }
-                    BaseThunderSignInButton(
+                    BaseSignInButton(
                         label = if (isLoading) i18n.resolve("userProfile.saving") else i18n.resolve("userProfile.save"),
                         isLoading = isLoading,
                     ) { save() }
@@ -51,7 +51,7 @@ fun ThunderUserProfile(
 
 /** Unstyled base variant (spec §8.3). */
 @Composable
-fun BaseThunderUserProfile(
+fun BaseUserProfile(
     modifier: Modifier = Modifier,
     onSaved: (() -> Unit)? = null,
     onError: (() -> Unit)? = null,

@@ -3,18 +3,18 @@ import 'thunderid_provider.dart';
 import '../models/sign_out_options.dart';
 
 /// Triggers sign-out on tap. Accessible per WCAG 2.1 AA (spec §8.1).
-class ThunderIDSignOutButton extends StatelessWidget {
+class SignOutButton extends StatelessWidget {
   final SignOutOptions? options;
   final VoidCallback? onSuccess;
   final VoidCallback? onError;
 
-  const ThunderIDSignOutButton({super.key, this.options, this.onSuccess, this.onError});
+  const SignOutButton({super.key, this.options, this.onSuccess, this.onError});
 
   @override
   Widget build(BuildContext context) {
     final state = ThunderIDProvider.of(context);
     final label = state.i18n.resolve('signOut.button');
-    return BaseThunderIDSignOutButton(
+    return BaseSignOutButton(
       options: options,
       onSuccess: onSuccess,
       onError: onError,
@@ -45,13 +45,13 @@ class ThunderIDSignOutButton extends StatelessWidget {
 }
 
 /// Unstyled base variant for full style customization (spec §8.2).
-class BaseThunderIDSignOutButton extends StatefulWidget {
+class BaseSignOutButton extends StatefulWidget {
   final SignOutOptions? options;
   final VoidCallback? onSuccess;
   final VoidCallback? onError;
   final Widget Function(BuildContext context, bool isLoading) builder;
 
-  const BaseThunderIDSignOutButton({
+  const BaseSignOutButton({
     super.key,
     required this.builder,
     this.options,
@@ -60,10 +60,10 @@ class BaseThunderIDSignOutButton extends StatefulWidget {
   });
 
   @override
-  State<BaseThunderIDSignOutButton> createState() => _BaseThunderIDSignOutButtonState();
+  State<BaseSignOutButton> createState() => _BaseSignOutButtonState();
 }
 
-class _BaseThunderIDSignOutButtonState extends State<BaseThunderIDSignOutButton> {
+class _BaseSignOutButtonState extends State<BaseSignOutButton> {
   bool _isLoading = false;
 
   @override

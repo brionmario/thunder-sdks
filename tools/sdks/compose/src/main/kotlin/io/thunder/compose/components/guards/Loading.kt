@@ -5,7 +5,7 @@ import io.thunder.compose.LocalThunder
 
 /** Renders [indicator] while the SDK is initializing or mid-operation (spec §8.4 Guards). */
 @Composable
-fun ThunderLoading(
+fun Loading(
     indicator: @Composable () -> Unit = {},
 ) {
     val state = LocalThunder.current

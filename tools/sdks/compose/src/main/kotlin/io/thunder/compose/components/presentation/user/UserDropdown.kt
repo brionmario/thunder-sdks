@@ -15,14 +15,14 @@ import kotlinx.coroutines.launch
 
 /** Avatar chip that expands to a menu with profile/sign-out actions (spec §8.4 Presentation). */
 @Composable
-fun ThunderUserDropdown(
+fun UserDropdown(
     modifier: Modifier = Modifier,
     onProfileTap: (() -> Unit)? = null,
     onSignOutComplete: (() -> Unit)? = null,
 ) {
     val state = LocalThunder.current
     val i18n = state.i18n
-    BaseThunderUserDropdown(modifier = modifier) { user, isOpen, toggle, signOut ->
+    BaseUserDropdown(modifier = modifier) { user, isOpen, toggle, signOut ->
         Column(horizontalAlignment = Alignment.End) {
             Box(
                 contentAlignment = Alignment.Center,
@@ -55,7 +55,7 @@ fun ThunderUserDropdown(
 
 /** Unstyled base variant (spec §8.3). */
 @Composable
-fun BaseThunderUserDropdown(
+fun BaseUserDropdown(
     modifier: Modifier = Modifier,
     content: @Composable (user: User?, isOpen: Boolean, toggle: () -> Unit, signOut: () -> Unit) -> Unit,
 ) {

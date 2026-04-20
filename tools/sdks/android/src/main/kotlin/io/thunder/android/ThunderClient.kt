@@ -227,52 +227,6 @@ class ThunderClient {
         return com.google.gson.Gson().fromJson(json, type)
     }
 
-    // MARK: - Organizations
-
-    suspend fun getAllOrganizations(): AllOrganizationsResponse {
-        requireInitialized()
-        return httpClient!!.get("/api/server/v1/organizations")
-    }
-
-    suspend fun getMyOrganizations(): List<Organization> {
-        requireInitialized()
-        return httpClient!!.get<AllOrganizationsResponse>("/api/server/v1/organizations/me").organizations
-    }
-
-    suspend fun getCurrentOrganization(): Organization? {
-        requireInitialized()
-        val claims = tokenStore?.idToken()?.let { runCatching { decodeJwtToken(it) }.getOrNull() }
-            ?: return null
-        val orgId = claims["org_id"] as? String ?: return null
-        val orgName = claims["org_name"] as? String ?: return null
-        return Organization(id = orgId, name = orgName)
-    }
-
-    suspend fun createOrganization(name: String, handle: String? = null): Organization {
-        requireInitialized()
-        val body = mutableMapOf<String, Any>("name" to name)
-        if (handle != null) body["handle"] = handle
-        return httpClient!!.post("/api/server/v1/organizations", body)
-    }
-
-    suspend fun inviteUser(email: String) {
-        requireInitialized()
-        httpClient!!.post<Unit>("/api/server/v1/organizations/me/invitations", mapOf("email" to email))
-    }
-
-    suspend fun switchOrganization(organization: Organization): TokenResponse {
-        requireInitialized()
-        val accessToken = tokenStore?.accessToken()
-            ?: throw IAMException(IAMErrorCode.SESSION_EXPIRED, "No active session")
-        return exchangeToken(
-            TokenExchangeRequestConfig(
-                subjectToken = accessToken,
-                subjectTokenType = "urn:ietf:params:oauth:token-type:access_token",
-                audience = organization.id
-            )
-        )
-    }
-
     // MARK: - Private helpers
 
     private fun requireInitialized() {

@@ -17,18 +17,6 @@ data class UserProfile(
     val claims: Map<String, Any> = emptyMap()
 )
 
-data class Organization(
-    val id: String,
-    val name: String,
-    val handle: String? = null
-)
-
-data class AllOrganizationsResponse(
-    val organizations: List<Organization>,
-    val totalCount: Int? = null,
-    val nextPage: String? = null
-)
-
 data class TokenResponse(
     @SerializedName("access_token") val accessToken: String,
     @SerializedName("token_type") val tokenType: String,

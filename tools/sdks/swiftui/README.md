@@ -35,10 +35,10 @@ import ThunderSwiftUI
 
 struct ContentView: View {
     var body: some View {
-        ThunderSignedIn {
-            ThunderUserDropdown()
+        SignedIn {
+            UserDropdown()
         } fallback: {
-            ThunderSignInButton()
+            SignInButton()
         }
     }
 }
@@ -49,45 +49,39 @@ struct ContentView: View {
 ### Actions
 | Component | Description |
 |-----------|-------------|
-| `ThunderSignInButton` / `BaseThunderSignInButton` | Starts redirect sign-in |
-| `ThunderSignOutButton` / `BaseThunderSignOutButton` | Signs out and refreshes state |
-| `ThunderSignUpButton` / `BaseThunderSignUpButton` | Starts sign-up flow |
+| `SignInButton` / `BaseSignInButton` | Starts redirect sign-in |
+| `SignOutButton` / `BaseSignOutButton` | Signs out and refreshes state |
+| `SignUpButton` / `BaseSignUpButton` | Starts sign-up flow |
 
 ### Flow
-| Component | Description |
-|-----------|-------------|
-| `ThunderCallback` / `BaseThunderCallback` | Handles OAuth2 redirect callback URL |
+
+| Component                   | Description                          |
+|-----------------------------|--------------------------------------|
+| `Callback` / `BaseCallback` | Handles OAuth2 redirect callback URL |
 
 ### Guards
 | Component | Description |
 |-----------|-------------|
-| `ThunderSignedIn` | Renders children only when authenticated |
-| `ThunderSignedOut` | Renders children only when unauthenticated |
-| `ThunderLoading` | Renders indicator while loading |
+| `SignedIn` | Renders children only when authenticated |
+| `SignedOut` | Renders children only when unauthenticated |
+| `Loading` | Renders indicator while loading |
 
 ### Presentation
 | Component | Description |
 |-----------|-------------|
-| `ThunderSignIn` / `BaseThunderSignIn` | App-native sign-in form (Flow Execution API) |
-| `ThunderSignUp` / `BaseThunderSignUp` | App-native sign-up form |
-| `ThunderAcceptInvite` / `BaseThunderAcceptInvite` | Accept an organization invitation |
-| `ThunderInviteUser` / `BaseThunderInviteUser` | Invite a user by email |
-| `ThunderUser` / `BaseThunderUser` | Current user display |
-| `ThunderUserDropdown` / `BaseThunderUserDropdown` | Avatar chip with profile/sign-out menu |
-| `ThunderUserProfile` / `BaseThunderUserProfile` | Editable user profile form |
-| `ThunderOrganization` / `BaseThunderOrganization` | Current organization display |
-| `ThunderOrganizationList` / `BaseThunderOrganizationList` | List of user's organizations |
-| `ThunderOrganizationProfile` / `BaseThunderOrganizationProfile` | Current org details |
-| `ThunderOrganizationSwitcher` / `BaseThunderOrganizationSwitcher` | Switch active organization |
-| `ThunderCreateOrganization` / `BaseThunderCreateOrganization` | Create a new organization |
-| `ThunderLanguageSwitcher` / `BaseThunderLanguageSwitcher` | Switch UI locale |
+| `SignIn` / `BaseSignIn` | App-native sign-in form (Flow Execution API) |
+| `SignUp` / `BaseSignUp` | App-native sign-up form |
+| `UserObject` / `BaseUserObject` | Current user display |
+| `UserDropdown` / `BaseUserDropdown` | Avatar chip with profile/sign-out menu |
+| `UserProfile` / `BaseUserProfile` | Editable user profile form |
+| `LanguageSwitcher` / `BaseLanguageSwitcher` | Switch UI locale |
 
 ## Customization
 
 Every component has a `Base*` unstyled variant. Pass a `@ViewBuilder` closure to render your own UI while the Base component manages state:
 
 ```swift
-BaseThunderSignIn(applicationId: "my-app") { signInState in
+BaseSignIn(applicationId: "my-app") { signInState in
     // Build your completely custom sign-in UI here
     ForEach(signInState.inputs, id: \.name) { input in
         MyCustomTextField(label: input.name, binding: signInState.binding(for: input.name))

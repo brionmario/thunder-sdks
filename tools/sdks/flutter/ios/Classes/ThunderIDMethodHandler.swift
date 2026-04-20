@@ -3,6 +3,7 @@ import ThunderID
 
 /// Routes Flutter method channel calls to the native ThunderIDClient (spec §7.1).
 /// All OAuth2/OIDC and token management logic lives in the Thunder iOS SDK, not here.
+@MainActor
 final class ThunderIDMethodHandler {
     private let client = ThunderIDClient()
 
@@ -89,24 +90,6 @@ final class ThunderIDMethodHandler {
                 let userId = args["userId"] as? String
                 let user = try await client.updateUserProfile(payload: payload, userId: userId)
                 result(encodeUser(user))
-
-            case "getAllOrganizations":
-                let response = try await client.getAllOrganizations()
-                result(encodeOrganizationsResponse(response))
-
-            case "getMyOrganizations":
-                let orgs = try await client.getMyOrganizations()
-                result(orgs.map { encodeOrganization($0) })
-
-            case "getCurrentOrganization":
-                let org = try await client.getCurrentOrganization()
-                result(org.map { encodeOrganization($0) })
-
-            case "switchOrganization":
-                let orgMap = args["organization"] as? [String: Any] ?? [:]
-                let org = Organization(id: orgMap["id"] as? String ?? "", name: orgMap["name"] as? String ?? "")
-                let tokenResponse = try await client.switchOrganization(org)
-                result(encodeTokenResponse(tokenResponse))
 
             case "getFlowMeta":
                 let appId = args["applicationId"] as? String ?? ""
@@ -221,15 +204,6 @@ final class ThunderIDMethodHandler {
         case .error:
             return "ERROR"
         }
-    }
-
-    private func encodeOrganization(_ o: Organization) -> [String: Any?] {
-        ["id": o.id, "name": o.name, "handle": o.handle]
-    }
-
-    private func encodeOrganizationsResponse(_ r: AllOrganizationsResponse) -> [String: Any] {
-        ["organizations": r.organizations.map { encodeOrganization($0) },
-         "totalCount": r.totalCount as Any]
     }
 
     private func encodeTokenResponse(_ r: TokenResponse) -> [String: Any?] {

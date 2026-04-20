@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// Tappable button that starts the redirect-based sign-in flow (spec §8.4 Actions).
-public struct ThunderSignInButton: View {
+public struct SignInButton: View {
     @EnvironmentObject private var state: ThunderState
     @EnvironmentObject private var i18n: ThunderI18n
     public let onTap: (() -> Void)?
@@ -9,14 +9,14 @@ public struct ThunderSignInButton: View {
     public init(onTap: (() -> Void)? = nil) { self.onTap = onTap }
 
     public var body: some View {
-        BaseThunderSignInButton(label: i18n.resolve("signIn.button"), isLoading: state.isLoading) {
+        BaseSignInButton(label: i18n.resolve("signIn.button"), isLoading: state.isLoading) {
             onTap?()
         }
     }
 }
 
 /// Unstyled base variant (spec §8.3).
-public struct BaseThunderSignInButton: View {
+public struct BaseSignInButton: View {
     public let label: String
     public let isLoading: Bool
     public let action: () -> Void

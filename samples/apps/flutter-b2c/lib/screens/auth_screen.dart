@@ -72,8 +72,8 @@ class _AuthScreenState extends State<AuthScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: _mode == _AuthMode.signIn
-                      ? ThunderIDSignIn(applicationId: applicationId)
-                      : ThunderIDSignUp(applicationId: applicationId),
+                      ? SignIn(applicationId: applicationId)
+                      : SignUp(applicationId: applicationId),
                 ),
               ),
             ],
