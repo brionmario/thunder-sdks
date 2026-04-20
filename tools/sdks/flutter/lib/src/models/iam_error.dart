@@ -67,7 +67,7 @@ enum IAMErrorCode {
   String get value => name
       .replaceAllMapped(RegExp(r'[A-Z]'), (m) => '_${m[0]}')
       .toUpperCase()
-      .replaceFirst('_', '');
+      .replaceFirst(RegExp(r'^_'), '');
 }
 
 class IAMException implements Exception {

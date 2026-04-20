@@ -19,7 +19,7 @@ import 'package:thunder_flutter/src/widgets/thunder_language_switcher.dart';
 const _config = ThunderConfig(baseUrl: 'https://localhost:8090', clientId: 'test');
 
 final _mockUser = User(
-  id: 'u1',
+  sub: 'u1',
   username: 'alice',
   email: 'alice@example.com',
   displayName: 'Alice Doe',
@@ -169,7 +169,7 @@ void main() {
     });
 
     testWidgets('BaseThunderUser receives null when signed out', (tester) async {
-      User? capturedUser = User(id: 'placeholder', username: 'x');
+      User? capturedUser = User(sub: 'placeholder', username: 'x');
       await tester.pumpWidget(_providerWidget(
         signedIn: false,
         child: BaseThunderUser(
