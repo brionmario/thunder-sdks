@@ -191,7 +191,7 @@ final class ThunderClientTests: XCTestCase {
 
         let body = flowClient.submitBody(flowId: "flow-123", actionId: "basic_auth")
 
-        XCTAssertEqual(body["flowId"] as? String, "flow-123")
+        XCTAssertEqual(body["executionId"] as? String, "flow-123")
         XCTAssertEqual(body["action"] as? String, "basic_auth")
         XCTAssertNil(body["actionId"])
     }
