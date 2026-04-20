@@ -2,29 +2,29 @@
 import PackageDescription
 
 let package = Package(
-    name: "ThunderSwiftUI",
+    name: "ThunderIDSwiftUI",
     platforms: [
         .iOS(.v16),
         .macOS(.v13),
     ],
     products: [
-        .library(name: "ThunderSwiftUI", targets: ["ThunderSwiftUI"]),
+        .library(name: "ThunderIDSwiftUI", targets: ["ThunderIDSwiftUI"]),
     ],
     dependencies: [
         .package(path: "../ios"),
     ],
     targets: [
         .target(
-            name: "ThunderSwiftUI",
+            name: "ThunderIDSwiftUI",
             dependencies: [
-                .product(name: "Thunder", package: "ios"),
+                .product(name: "ThunderID", package: "ios"),
             ],
-            path: "Sources/ThunderSwiftUI"
+            path: "Sources/ThunderIDSwiftUI"
         ),
         .testTarget(
-            name: "ThunderSwiftUITests",
-            dependencies: ["ThunderSwiftUI"],
-            path: "Tests/ThunderSwiftUITests"
+            name: "ThunderIDSwiftUITests",
+            dependencies: ["ThunderIDSwiftUI"],
+            path: "Tests/ThunderIDSwiftUITests"
         ),
     ]
 )

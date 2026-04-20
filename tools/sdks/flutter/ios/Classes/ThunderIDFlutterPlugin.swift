@@ -1,6 +1,6 @@
 import Flutter
 import UIKit
-import Thunder
+import ThunderID
 
 @objc public class ThunderIDFlutterPlugin: NSObject, FlutterPlugin {
     private let handler = ThunderIDMethodHandler()

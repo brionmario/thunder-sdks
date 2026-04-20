@@ -1,10 +1,10 @@
 import Flutter
-import Thunder
+import ThunderID
 
-/// Routes Flutter method channel calls to the native ThunderClient (spec §7.1).
+/// Routes Flutter method channel calls to the native ThunderIDClient (spec §7.1).
 /// All OAuth2/OIDC and token management logic lives in the Thunder iOS SDK, not here.
 final class ThunderIDMethodHandler {
-    private let client = ThunderClient()
+    private let client = ThunderIDClient()
 
     func handle(method: String, args: [String: Any], result: @escaping FlutterResult) async {
         do {
@@ -126,7 +126,7 @@ final class ThunderIDMethodHandler {
 
     // MARK: - Builders
 
-    private func buildConfig(from args: [String: Any]) throws -> ThunderConfig {
+    private func buildConfig(from args: [String: Any]) throws -> ThunderIDConfig {
         guard let baseUrl = args["baseUrl"] as? String else {
             throw IAMError(code: .invalidConfiguration, message: "baseUrl is required")
         }
@@ -137,7 +137,7 @@ final class ThunderIDMethodHandler {
                 clockTolerance: v["clockTolerance"] as? Int ?? 0
             )
         } ?? TokenValidationConfig()
-        return ThunderConfig(
+        return ThunderIDConfig(
             baseUrl: baseUrl,
             clientId: args["clientId"] as? String,
             scopes: (args["scopes"] as? [String]) ?? ["openid"],

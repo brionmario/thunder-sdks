@@ -2,25 +2,25 @@
 import PackageDescription
 
 let package = Package(
-    name: "Thunder",
+    name: "ThunderID",
     platforms: [
         .iOS(.v16),
         .macOS(.v13)
     ],
     products: [
-        .library(name: "Thunder", targets: ["Thunder"])
+        .library(name: "ThunderID", targets: ["ThunderID"])
     ],
     dependencies: [],
     targets: [
         .target(
-            name: "Thunder",
+            name: "ThunderID",
             dependencies: [],
-            path: "Sources/Thunder"
+            path: "Sources/ThunderID"
         ),
         .testTarget(
-            name: "ThunderTests",
-            dependencies: ["Thunder"],
-            path: "Tests/ThunderTests"
+            name: "ThunderIDTests",
+            dependencies: ["ThunderID"],
+            path: "Tests/ThunderIDTests"
         )
     ]
 )
