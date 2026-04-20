@@ -4,11 +4,11 @@ plugins {
     id("maven-publish")
 }
 
-group = "io.thunder"
-version = "0.1.0"
+group = "dev.thunderid"
+version = "0.0.0"
 
 android {
-    namespace = "io.thunder.android"
+    namespace = "dev.thunderid.android"
     compileSdk = 34
 
     defaultConfig {
@@ -40,16 +40,16 @@ dependencies {
 publishing {
     publications {
         create<MavenPublication>("release") {
-            groupId = "io.thunder"
+            groupId = "dev.thunderid"
             artifactId = "android"
-            version = "0.1.0"
+            version = "0.0.0"
             afterEvaluate {
                 from(components["release"])
             }
             pom {
                 name.set("Thunder Android SDK")
                 description.set("Android Platform SDK for Thunder identity management")
-                url.set("https://github.com/asgardeo/thunder")
+                url.set("https://thunderid.dev")
                 licenses {
                     license {
                         name.set("Apache License 2.0")

@@ -5,7 +5,7 @@ plugins {
 }
 
 android {
-    namespace = "io.thunder.compose"
+    namespace = "dev.thunderid.compose"
     compileSdk = 34
 
     defaultConfig {
@@ -44,7 +44,7 @@ dependencies {
 publishing {
     publications {
         register<MavenPublication>("release") {
-            groupId = "io.thunder"
+            groupId = "dev.thunderid"
             artifactId = "compose"
             version = "0.0.0"
         }

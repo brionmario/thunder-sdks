@@ -1,18 +1,18 @@
 Pod::Spec.new do |s|
   s.name             = 'thunder_flutter'
-  s.version          = '0.1.0'
+  s.version          = '0.0.0'
   s.summary          = 'Flutter plugin for Thunder identity management.'
   s.description      = <<-DESC
     Bridges the Flutter SDK to the native Thunder iOS Platform SDK via Flutter platform channels.
     All OAuth2/OIDC and token management logic is delegated to the native Thunder Swift SDK.
   DESC
-  s.homepage         = 'https://github.com/asgardeo/thunder'
+  s.homepage         = 'https://thunderid.dev'
   s.license          = { :type => 'Apache License 2.0', :file => '../LICENSE' }
-  s.author           = { 'Asgardeo' => 'iam-dev@wso2.com' }
+  s.author           = { 'Thunder' => 'dev@thunderid.dev' }
   s.source           = { :path => '.' }
   s.source_files     = 'Classes/**/*'
   s.dependency       'Flutter'
-  s.dependency       'Thunder', '~> 0.1.0'
+  s.dependency       'Thunder', '~> 0.0'
   s.platform         = :ios, '16.0'
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'SWIFT_STRICT_CONCURRENCY' => 'complete' }
   s.swift_version    = '5.9'

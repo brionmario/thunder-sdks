@@ -1,5 +1,5 @@
-group 'io.thunder.flutter'
-version '0.1.0'
+group 'dev.thunderid.flutter'
+version '0.0.0'
 
 buildscript {
     ext.kotlin_version = '1.9.22'
@@ -17,7 +17,7 @@ apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
 
 android {
-    namespace 'io.thunder.flutter'
+    namespace 'dev.thunderid.flutter'
     compileSdk 34
 
     defaultConfig {
@@ -36,6 +36,6 @@ android {
 
 dependencies {
     compileOnly 'io.flutter:flutter_embedding_debug:1.0.0-...'
-    implementation 'io.thunder:android:0.1.0'
+    implementation 'dev.thunderid:android:0.0.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3'
 }

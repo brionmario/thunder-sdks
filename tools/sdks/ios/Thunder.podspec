@@ -5,9 +5,9 @@ Pod::Spec.new do |s|
   s.description      = <<-DESC
     Native iOS SDK for Thunder identity management.
   DESC
-  s.homepage         = 'https://github.com/asgardeo/thunder'
+  s.homepage         = 'https://thunderid.dev'
   s.license          = { :type => 'Apache License 2.0', :file => '../LICENSE' }
-  s.author           = { 'Asgardeo' => 'iam-dev@wso2.com' }
+  s.author           = { 'Thunder' => 'dev@thunderid.dev' }
   s.source           = { :path => '.' }
   s.source_files     = 'Sources/Thunder/**/*.swift'
   s.platform         = :ios, '16.0'
