@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:thunder_flutter/thunder_flutter.dart';
+import 'package:thunderid_flutter/thunderid_flutter.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -14,7 +14,7 @@ class ProfileScreen extends StatelessWidget {
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
-          child: ThunderUserProfile(
+          child: ThunderIDUserProfile(
             onSaved: () => ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('Profile saved')),
             ),

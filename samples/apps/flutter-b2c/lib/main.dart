@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:thunder_flutter/thunder_flutter.dart';
+import 'package:thunderid_flutter/thunderid_flutter.dart';
 import 'app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await dotenv.load();
   runApp(
-    ThunderProvider(
-      config: ThunderConfig(
+    ThunderIDProvider(
+      config: ThunderIDConfig(
         baseUrl: dotenv.env['THUNDER_BASE_URL']!,
         clientId: dotenv.env['THUNDER_CLIENT_ID'],
         applicationId: dotenv.env['THUNDER_APP_ID'],

@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../models/flow_models.dart';
 import '../flow_template_resolver.dart';
-import 'thunder_provider.dart';
+import 'thunderid_provider.dart';
 
-/// Internal widget used by [ThunderSignIn] and [ThunderSignUp] to render a
+/// Internal widget used by [ThunderIDSignIn] and [ThunderIDSignUp] to render a
 /// server-driven flow step. Supports `meta.components` layout when present,
 /// with a plain `inputs`/`actions` fallback.
 class FlowForm extends StatefulWidget {
@@ -48,7 +48,7 @@ class _FlowFormState extends State<FlowForm> {
 
   Future<void> _fetchMeta() async {
     try {
-      final thunder = ThunderProvider.of(context);
+      final thunder = ThunderIDProvider.of(context);
       final meta = await thunder.client.getFlowMeta(widget.applicationId);
       if (mounted) setState(() => _resolver = FlowTemplateResolver(meta));
     } catch (_) {}

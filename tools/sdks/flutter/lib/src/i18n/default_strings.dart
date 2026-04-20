@@ -1,4 +1,4 @@
-/// Default English strings for all Thunder UI component labels.
+/// Default English strings for all ThunderID UI component labels.
 const Map<String, String> thunderDefaultStrings = {
   // Actions
   'signIn.button': 'Sign In',

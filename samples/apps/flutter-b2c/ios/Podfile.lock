@@ -1,27 +1,27 @@
 PODS:
   - Flutter (1.0.0)
-  - Thunder (0.1.0)
-  - thunder_flutter (0.1.0):
+  - Thunder (0.0.0)
+  - thunderid_flutter (0.0.0):
     - Flutter
-    - Thunder (~> 0.1.0)
+    - Thunder (~> 0.0)
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
   - Thunder (from `../../../../tools/sdks/ios`)
-  - thunder_flutter (from `.symlinks/plugins/thunder_flutter/ios`)
+  - thunderid_flutter (from `.symlinks/plugins/thunderid_flutter/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
   Thunder:
     :path: "../../../../tools/sdks/ios"
-  thunder_flutter:
-    :path: ".symlinks/plugins/thunder_flutter/ios"
+  thunderid_flutter:
+    :path: ".symlinks/plugins/thunderid_flutter/ios"
 
 SPEC CHECKSUMS:
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
-  Thunder: 30cfb15449bf5eafde8e181cf0a570771b04a1d0
-  thunder_flutter: f663c81952f972ff2759153558fded47682a11db
+  Thunder: 9921659a9dbb1b28f011af94e1710a9091314423
+  thunderid_flutter: 0fbb50b672ae5dab8ed44bb8f45686884291065a
 
 PODFILE CHECKSUM: c6caeba9c57801840455c220df647824801e77fe
 

@@ -1,4 +1,4 @@
-/// All Thunder SDK error codes (spec §10.2).
+/// All ThunderID SDK error codes (spec §10.2).
 enum IAMErrorCode {
   // Configuration
   sdkNotInitialized,

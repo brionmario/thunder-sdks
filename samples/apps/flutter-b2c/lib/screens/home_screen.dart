@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:thunder_flutter/thunder_flutter.dart';
+import 'package:thunderid_flutter/thunderid_flutter.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -22,7 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> _logToken() async {
-    final thunder = ThunderProvider.of(context);
+    final thunder = ThunderIDProvider.of(context);
     try {
       final token = await thunder.client.getAccessToken();
       debugPrint('[HomeScreen] access token: $token');
@@ -150,7 +150,7 @@ class _ExploreTabState extends State<_ExploreTab> {
 
   @override
   Widget build(BuildContext context) {
-    final thunder = ThunderProvider.of(context);
+    final thunder = ThunderIDProvider.of(context);
     final user = thunder.user;
     final firstName = (user?.claims?['given_name'] as String?)?.isNotEmpty == true
         ? user!.claims!['given_name'] as String
@@ -361,7 +361,7 @@ class _ProfileTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final thunder = ThunderProvider.of(context);
+    final thunder = ThunderIDProvider.of(context);
     final user = thunder.user;
     final cs = Theme.of(context).colorScheme;
 
@@ -514,7 +514,7 @@ class _ProfileTab extends StatelessWidget {
             const SizedBox(height: 12),
 
             // ── Sign out ──────────────────────────────────────────────────
-            BaseThunderSignOutButton(
+            BaseThunderIDSignOutButton(
               builder: (ctx, isLoading) => OutlinedButton.icon(
                 onPressed: null,
                 icon: isLoading
@@ -549,7 +549,7 @@ class _ProfileTab extends StatelessWidget {
         builder: (ctx, controller) => SingleChildScrollView(
           controller: controller,
           padding: const EdgeInsets.fromLTRB(24, 24, 24, 32),
-          child: ThunderUserProfile(
+          child: ThunderIDUserProfile(
             onSaved: () => Navigator.pop(ctx),
           ),
         ),

@@ -1,13 +1,13 @@
 /// Preferences for UI customization — theme and i18n (spec §5.3).
-/// Applies only when using Thunder UI components; ignored by the protocol layer.
-class ThunderPreferences {
+/// Applies only when using ThunderID UI components; ignored by the protocol layer.
+class ThunderIDPreferences {
   final ThemePreferences? theme;
   final I18nPreferences? i18n;
 
-  /// When true, resolve theme from the Thunder Flow Meta API (GET /flow/meta).
+  /// When true, resolve theme from the ThunderID Flow Meta API (GET /flow/meta).
   final bool resolveFromMeta;
 
-  const ThunderPreferences({
+  const ThunderIDPreferences({
     this.theme,
     this.i18n,
     this.resolveFromMeta = false,

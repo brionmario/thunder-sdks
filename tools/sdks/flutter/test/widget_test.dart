@@ -1,22 +1,22 @@
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/services.dart';
-import 'package:thunder_flutter/src/thunder_client.dart';
-import 'package:thunder_flutter/src/models/thunder_config.dart';
-import 'package:thunder_flutter/src/models/user.dart';
-import 'package:thunder_flutter/src/models/organization.dart';
-import 'package:thunder_flutter/src/widgets/thunder_provider.dart';
-import 'package:thunder_flutter/src/widgets/thunder_signed_in.dart';
-import 'package:thunder_flutter/src/widgets/thunder_signed_out.dart';
-import 'package:thunder_flutter/src/widgets/thunder_loading.dart';
-import 'package:thunder_flutter/src/widgets/thunder_user.dart';
-import 'package:thunder_flutter/src/widgets/thunder_organization_list.dart';
-import 'package:thunder_flutter/src/widgets/thunder_organization_switcher.dart';
-import 'package:thunder_flutter/src/widgets/thunder_language_switcher.dart';
+import 'package:thunderid_flutter/src/thunderid_client.dart';
+import 'package:thunderid_flutter/src/models/thunderid_config.dart';
+import 'package:thunderid_flutter/src/models/user.dart';
+import 'package:thunderid_flutter/src/models/organization.dart';
+import 'package:thunderid_flutter/src/widgets/thunderid_provider.dart';
+import 'package:thunderid_flutter/src/widgets/thunderid_signed_in.dart';
+import 'package:thunderid_flutter/src/widgets/thunderid_signed_out.dart';
+import 'package:thunderid_flutter/src/widgets/thunderid_loading.dart';
+import 'package:thunderid_flutter/src/widgets/thunderid_user.dart';
+import 'package:thunderid_flutter/src/widgets/thunderid_organization_list.dart';
+import 'package:thunderid_flutter/src/widgets/thunderid_organization_switcher.dart';
+import 'package:thunderid_flutter/src/widgets/thunderid_language_switcher.dart';
 
 // ── Test helpers ──────────────────────────────────────────────────────────────
 
-const _config = ThunderConfig(baseUrl: 'https://localhost:8090', clientId: 'test');
+const _config = ThunderIDConfig(baseUrl: 'https://localhost:8090', clientId: 'test');
 
 final _mockUser = User(
   sub: 'u1',
@@ -30,7 +30,7 @@ final _mockOrgs = [
   Organization(id: 'o2', name: 'Org Two', handle: 'org-two'),
 ];
 
-/// Sets up a mock MethodChannel for io.thunder/sdk.
+/// Sets up a mock MethodChannel for dev.thunderid/sdk.
 void _setHandler(MethodChannel channel, Future<dynamic> Function(MethodCall) handler) {
   TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
       .setMockMethodCallHandler(channel, handler);
@@ -41,9 +41,9 @@ void _clearHandler(MethodChannel channel) {
       .setMockMethodCallHandler(channel, null);
 }
 
-const _sdkChannel = MethodChannel('io.thunder/sdk');
+const _sdkChannel = MethodChannel('dev.thunderid/sdk');
 
-/// Builds a [ThunderProvider] with a pre-configured [ThunderClient] under test.
+/// Builds a [ThunderIDProvider] with a pre-configured [ThunderIDClient] under test.
 Widget _providerWidget({
   required Widget child,
   bool signedIn = false,
@@ -69,7 +69,7 @@ Widget _providerWidget({
 
   return WidgetsApp(
     color: const Color(0xFFFFFFFF),
-    builder: (_, __) => ThunderProvider(
+    builder: (_, __) => ThunderIDProvider(
       config: _config,
       child: child,
     ),
@@ -83,11 +83,11 @@ void main() {
 
   tearDown(() => _clearHandler(_sdkChannel));
 
-  group('ThunderSignedIn', () {
+  group('ThunderIDSignedIn', () {
     testWidgets('renders child when signed in', (tester) async {
       await tester.pumpWidget(_providerWidget(
         signedIn: true,
-        child: const ThunderSignedIn(child: Text('hello', textDirection: TextDirection.ltr)),
+        child: const ThunderIDSignedIn(child: Text('hello', textDirection: TextDirection.ltr)),
       ));
       await tester.pumpAndSettle();
       expect(find.text('hello'), findsOneWidget);
@@ -96,7 +96,7 @@ void main() {
     testWidgets('hides child when signed out', (tester) async {
       await tester.pumpWidget(_providerWidget(
         signedIn: false,
-        child: const ThunderSignedIn(child: Text('hello', textDirection: TextDirection.ltr)),
+        child: const ThunderIDSignedIn(child: Text('hello', textDirection: TextDirection.ltr)),
       ));
       await tester.pumpAndSettle();
       expect(find.text('hello'), findsNothing);
@@ -105,7 +105,7 @@ void main() {
     testWidgets('shows fallback when signed out', (tester) async {
       await tester.pumpWidget(_providerWidget(
         signedIn: false,
-        child: const ThunderSignedIn(
+        child: const ThunderIDSignedIn(
           child: Text('hello', textDirection: TextDirection.ltr),
           fallback: Text('sign in please', textDirection: TextDirection.ltr),
         ),
@@ -115,11 +115,11 @@ void main() {
     });
   });
 
-  group('ThunderSignedOut', () {
+  group('ThunderIDSignedOut', () {
     testWidgets('renders child when signed out', (tester) async {
       await tester.pumpWidget(_providerWidget(
         signedIn: false,
-        child: const ThunderSignedOut(child: Text('signed out', textDirection: TextDirection.ltr)),
+        child: const ThunderIDSignedOut(child: Text('signed out', textDirection: TextDirection.ltr)),
       ));
       await tester.pumpAndSettle();
       expect(find.text('signed out'), findsOneWidget);
@@ -128,19 +128,19 @@ void main() {
     testWidgets('hides child when signed in', (tester) async {
       await tester.pumpWidget(_providerWidget(
         signedIn: true,
-        child: const ThunderSignedOut(child: Text('signed out', textDirection: TextDirection.ltr)),
+        child: const ThunderIDSignedOut(child: Text('signed out', textDirection: TextDirection.ltr)),
       ));
       await tester.pumpAndSettle();
       expect(find.text('signed out'), findsNothing);
     });
   });
 
-  group('ThunderLoading', () {
+  group('ThunderIDLoading', () {
     testWidgets('renders indicator while loading', (tester) async {
       // Loading state only exists transiently during init; pump once to catch it.
       await tester.pumpWidget(_providerWidget(
         signedIn: false,
-        child: ThunderLoading(
+        child: ThunderIDLoading(
           indicator: const Text('loading...', textDirection: TextDirection.ltr),
         ),
       ));
@@ -152,12 +152,12 @@ void main() {
     });
   });
 
-  group('ThunderUser', () {
-    testWidgets('BaseThunderUser receives signed-in user', (tester) async {
+  group('ThunderIDUser', () {
+    testWidgets('BaseThunderIDUser receives signed-in user', (tester) async {
       String? displayedName;
       await tester.pumpWidget(_providerWidget(
         signedIn: true,
-        child: BaseThunderUser(
+        child: BaseThunderIDUser(
           builder: (_, user) {
             displayedName = user?.displayName;
             return const SizedBox();
@@ -168,11 +168,11 @@ void main() {
       expect(displayedName, 'Alice Doe');
     });
 
-    testWidgets('BaseThunderUser receives null when signed out', (tester) async {
+    testWidgets('BaseThunderIDUser receives null when signed out', (tester) async {
       User? capturedUser = User(sub: 'placeholder', username: 'x');
       await tester.pumpWidget(_providerWidget(
         signedIn: false,
-        child: BaseThunderUser(
+        child: BaseThunderIDUser(
           builder: (_, user) {
             capturedUser = user;
             return const SizedBox();
@@ -184,12 +184,12 @@ void main() {
     });
   });
 
-  group('ThunderOrganizationList', () {
-    testWidgets('BaseThunderOrganizationList fetches and exposes org list', (tester) async {
+  group('ThunderIDOrganizationList', () {
+    testWidgets('BaseThunderIDOrganizationList fetches and exposes org list', (tester) async {
       List<Organization>? captured;
       await tester.pumpWidget(_providerWidget(
         signedIn: true,
-        child: BaseThunderOrganizationList(
+        child: BaseThunderIDOrganizationList(
           builder: (_, orgs, isLoading, error) {
             if (!isLoading) captured = orgs;
             return const SizedBox();
@@ -203,12 +203,12 @@ void main() {
     });
   });
 
-  group('ThunderOrganizationSwitcher', () {
-    testWidgets('BaseThunderOrganizationSwitcher calls switchOrganization on select', (tester) async {
+  group('ThunderIDOrganizationSwitcher', () {
+    testWidgets('BaseThunderIDOrganizationSwitcher calls switchOrganization on select', (tester) async {
       Organization? switched;
       await tester.pumpWidget(_providerWidget(
         signedIn: true,
-        child: BaseThunderOrganizationSwitcher(
+        child: BaseThunderIDOrganizationSwitcher(
           builder: (_, orgs, current, isSwitching, error, switchOrg) {
             if (orgs.isEmpty || isSwitching) return const SizedBox();
             return GestureDetector(
@@ -228,13 +228,13 @@ void main() {
     });
   });
 
-  group('ThunderLanguageSwitcher', () {
-    testWidgets('BaseThunderLanguageSwitcher exposes active locale and select callback', (tester) async {
+  group('ThunderIDLanguageSwitcher', () {
+    testWidgets('BaseThunderIDLanguageSwitcher exposes active locale and select callback', (tester) async {
       String? activeBefore;
       String? activeAfter;
       await tester.pumpWidget(_providerWidget(
         signedIn: false,
-        child: BaseThunderLanguageSwitcher(
+        child: BaseThunderIDLanguageSwitcher(
           locales: const ['en-US', 'fr-FR'],
           builder: (_, active, select) {
             activeBefore ??= active;

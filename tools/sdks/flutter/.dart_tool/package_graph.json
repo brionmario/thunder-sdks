@@ -1,11 +1,11 @@
 {
   "roots": [
-    "thunder_flutter"
+    "thunderid_flutter"
   ],
   "packages": [
     {
-      "name": "thunder_flutter",
-      "version": "0.1.0",
+      "name": "thunderid_flutter",
+      "version": "0.0.1",
       "dependencies": [
         "flutter",
         "plugin_platform_interface"

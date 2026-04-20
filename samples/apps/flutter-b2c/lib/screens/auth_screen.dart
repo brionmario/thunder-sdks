@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
-import 'package:thunder_flutter/thunder_flutter.dart';
+import 'package:thunderid_flutter/thunderid_flutter.dart';
 
 enum _AuthMode { signIn, signUp }
 
@@ -72,8 +72,8 @@ class _AuthScreenState extends State<AuthScreen> {
                 child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: _mode == _AuthMode.signIn
-                      ? ThunderSignIn(applicationId: applicationId)
-                      : ThunderSignUp(applicationId: applicationId),
+                      ? ThunderIDSignIn(applicationId: applicationId)
+                      : ThunderIDSignUp(applicationId: applicationId),
                 ),
               ),
             ],

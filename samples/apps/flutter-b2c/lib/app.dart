@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:thunder_flutter/thunder_flutter.dart';
+import 'package:thunderid_flutter/thunderid_flutter.dart';
 import 'screens/auth_screen.dart';
 import 'screens/home_screen.dart';
 
@@ -24,7 +24,7 @@ class _RootScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final thunder = ThunderProvider.of(context);
+    final thunder = ThunderIDProvider.of(context);
 
     if (thunder.isLoading) {
       return const Scaffold(

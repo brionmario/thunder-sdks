@@ -1,6 +1,6 @@
-name: thunder_flutter
+name: thunderid_flutter
 description: Flutter SDK for Thunder identity management. Bridges to native iOS and Android SDKs via platform channels.
-version: 0.0.0
+version: 0.0.1
 homepage: https://thunderid.dev
 
 environment:
@@ -24,6 +24,6 @@ flutter:
     platforms:
       android:
         package: dev.thunderid.flutter
-        pluginClass: ThunderFlutterPlugin
+        pluginClass: ThunderIDFlutterPlugin
       ios:
-        pluginClass: ThunderFlutterPlugin
+        pluginClass: ThunderIDFlutterPlugin
