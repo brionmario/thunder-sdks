@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name             = 'ThunderID'
-  s.version          = '0.0.0'
+  s.version          = '0.0.1'
   s.summary          = 'Thunder iOS SDK'
   s.description      = <<-DESC
     Native iOS SDK for Thunder identity management.

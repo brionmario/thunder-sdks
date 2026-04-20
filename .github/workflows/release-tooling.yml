@@ -141,6 +141,26 @@ jobs:
               ;;
           esac
 
+      - name: 💾 Commit and push version bump
+        run: |
+          SDK="${{ github.event.inputs.sdk }}"
+          VERSION="${{ needs.compute-version.outputs.new_version }}"
+
+          case "$SDK" in
+            android)  git add tools/sdks/android/build.gradle.kts ;;
+            compose)  git add tools/sdks/compose/build.gradle.kts ;;
+            ios)      git add tools/sdks/ios/ThunderID.podspec ;;
+            swiftui)  git add tools/sdks/swiftui/VERSION ;;
+            flutter)  git add tools/sdks/flutter/pubspec.yaml ;;
+          esac
+
+          if ! git diff --staged --quiet; then
+            git commit -m "Bump $SDK SDK version to $VERSION"
+            git push
+          else
+            echo "ℹ️ Version already at $VERSION, skipping commit"
+          fi
+
       - name: 📦 Publish Android SDK
         if: ${{ github.event.inputs.sdk == 'android' }}
         uses: ./.github/actions/publish-android-sdk
@@ -176,23 +196,3 @@ jobs:
         uses: ./.github/actions/publish-flutter-sdk
         with:
           version: ${{ needs.compute-version.outputs.new_version }}
-
-      - name: 💾 Commit and push version bump
-        run: |
-          SDK="${{ github.event.inputs.sdk }}"
-          VERSION="${{ needs.compute-version.outputs.new_version }}"
-
-          case "$SDK" in
-            android)  git add tools/sdks/android/build.gradle.kts ;;
-            compose)  git add tools/sdks/compose/build.gradle.kts ;;
-            ios)      git add tools/sdks/ios/ThunderID.podspec ;;
-            swiftui)  git add tools/sdks/swiftui/VERSION ;;
-            flutter)  git add tools/sdks/flutter/pubspec.yaml ;;
-          esac
-
-          if ! git diff --staged --quiet; then
-            git commit -m "Bump $SDK SDK version to $VERSION"
-            git push
-          else
-            echo "ℹ️ Version already at $VERSION, skipping commit"
-          fi
