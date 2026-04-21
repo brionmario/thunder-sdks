@@ -1,6 +1,6 @@
-# Thunder SDK Creator
+# ThunderID SDK Creator
 
-You are helping implement a new Thunder SDK.
+You are helping implement a new ThunderID SDK.
 
 **Before doing anything else, read the full specification:**
 
@@ -44,7 +44,7 @@ Work through the spec in order. For each area below, **re-read the referenced se
 
 | Area | Spec section | Key requirement |
 |------|-------------|-----------------|
-| Package naming | §15.2 | Follow ecosystem convention (`@thunder/*`, `io.thunder.*`, etc.) |
+| Package naming | §15.2 | Follow ecosystem convention (`@thunderid/*`, `io.thunderid.*`, etc.) |
 | Layer contract | §2.2, §2.6 | Implement only this layer's responsibility; never re-implement parent logic |
 | Initialization | §5.1 | Validate config at init; throw `SDKNotInitializedException` before init |
 | Configuration schema | §5.2 | All required + applicable optional fields; reject HTTP `baseUrl` |
@@ -52,7 +52,7 @@ Work through the spec in order. For each area below, **re-read the referenced se
 | Operational modes | §4 | Both redirect and app-native; mode inferred from config, not declared |
 | PKCE | §11.2 | Mandatory in redirect mode; `S256` only; `code_verifier` in memory only |
 | `IAMClient` interface | §7.1 | All methods; `signIn()`/`signUp()` overloaded for both modes |
-| Identity lifecycle ops | §6 | Auth, registration, recovery, session, token, profile, org management |
+| Identity lifecycle ops | §6 | Auth, registration, recovery, session, token, profile, org management *(org not yet implemented)* |
 | Framework integration | §7.2, §7.3 | Single entry point (hook/service/composable); init at app root |
 | UI components | §8 | All four categories; `Base*` unstyled variants; WCAG 2.1 AA; i18n |
 | Async contract | §9.2 | Platform-idiomatic async (Promise, suspend, async throws, Future, etc.) |

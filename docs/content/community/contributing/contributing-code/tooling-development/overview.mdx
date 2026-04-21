@@ -1,0 +1,82 @@
+---
+title: Tooling Development
+description: Guidelines for contributing to Thunder's tooling, including SDKs.
+sidebar_position: 1
+hide_table_of_contents: false
+---
+
+# Tooling Development
+
+This section covers contribution guidelines for Thunder's tooling — client libraries, SDKs, and related developer tooling that lives under `tools/` in the monorepo.
+
+## SDKs
+
+ThunderID SDKs let applications integrate with Thunder's authentication and identity APIs across multiple languages and platforms. All SDKs follow a shared four-layer architecture and a common specification.
+
+### SDK Specification
+
+Before implementing or contributing to any SDK, read the [SDK Specification](./sdk-specification/README.md). It is the authoritative source for:
+
+- SDK architecture and layer rules
+- Supported operational modes (redirect-based and app-native)
+- Initialization, configuration, and preferences
+- Identity lifecycle operations (sign-in, sign-up, account recovery, token management, profile, organizations)
+- Framework integration patterns and public API conventions
+- UI component requirements
+- Error model and error codes
+- Security requirements (PKCE, token storage, token validation, credential handling)
+- Platform and language guidelines
+- Extensibility interfaces (`StorageAdapter`, `LoggerAdapter`, `HTTPAdapter`, event hooks)
+- SDK layout, naming conventions, CI/CD pipelines
+- Documentation and sample application requirements
+
+### Creating a New SDK
+
+To create a new SDK, invoke the **ThunderID SDK Creator** skill in Claude Code:
+
+```
+/create-sdk
+```
+
+The skill walks you through:
+
+1. Identifying the SDK name, layer, parent SDK, and ecosystem
+2. Scaffolding the directory structure under `tools/sdks/<sdk-name>/`
+3. Implementing the `IAMClient` interface and all required spec sections
+4. Creating a sample application under `samples/apps/`
+5. Writing documentation stubs under `docs/content/`
+6. Verifying the final checklist against spec §15.3
+
+The skill cross-references the [SDK Specification](./sdk-specification/README.md) at each step. When in doubt, the spec wins over the skill's process guidance.
+
+### SDK Directory Layout
+
+```text
+tools/sdks/
+└── <sdk-name>/     # SDK library source — the publishable package
+
+samples/apps/
+└── <sdk>-<scenario>/   # Runnable sample application per SDK
+
+.github/actions/
+└── <sdk-name>-sdk/
+    └── action.yml       # Composite CI action: setup → install → lint → build → test
+```
+
+### Checklist Before Shipping
+
+Every new SDK must satisfy the checklist in spec §15.3:
+
+- `tools/sdks/<sdk-name>/` — source, `README.md`, build config, test suite (80%+ coverage target)
+- `samples/apps/<sdk>-<scenario>/` — `README.md`, `.env.example`, no hardcoded secrets
+- `.github/actions/<sdk-name>-sdk/action.yml` — composite CI action
+- Job added to `.github/workflows/pr-builder.yml`
+- Package named per spec §15.2
+- Parent SDK declared as a versioned dependency; no layer skipped
+- All `IAMClient` methods implemented or correctly delegated
+- PKCE enforced (`S256` only, verifier in memory only)
+- Token storage uses platform-secure defaults
+- ID token validation complete
+- All error codes from spec §10.2 implemented as typed enum
+- No credentials, tokens, or PII logged at any level
+- Documentation stubs created (spec §16)
