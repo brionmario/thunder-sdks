@@ -22,4 +22,4 @@ Open in Android Studio, sync Gradle, and run on an API 24+ emulator or device.
 
 ## SDK used
 
-`io.thunder.compose` at `tools/sdks/compose/` — depends on the `io.thunder.android` Platform SDK at `tools/sdks/android/`.
+`io.thunder.compose` at `tools/sdks/thunderid-compose/` — depends on the `io.thunder.android` Platform SDK at `tools/sdks/thunderid-android/`.

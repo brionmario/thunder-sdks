@@ -203,7 +203,7 @@ packages:
   thunderid_flutter:
     dependency: "direct main"
     description:
-      path: "../../../tools/sdks/flutter"
+      path: "../../../tools/sdks/thunderid-flutter"
       relative: true
     source: path
     version: "0.0.1"

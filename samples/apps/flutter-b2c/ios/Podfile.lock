@@ -7,14 +7,14 @@ PODS:
 
 DEPENDENCIES:
   - Flutter (from `Flutter`)
-  - ThunderID (from `../../../../tools/sdks/ios`)
+  - ThunderID (from `../../../../tools/sdks/thunderid-ios`)
   - thunderid_flutter (from `.symlinks/plugins/thunderid_flutter/ios`)
 
 EXTERNAL SOURCES:
   Flutter:
     :path: Flutter
   ThunderID:
-    :path: "../../../../tools/sdks/ios"
+    :path: "../../../../tools/sdks/thunderid-ios"
   thunderid_flutter:
     :path: ".symlinks/plugins/thunderid_flutter/ios"
 
@@ -23,6 +23,6 @@ SPEC CHECKSUMS:
   ThunderID: eec320bd5627692cbc445753f431499e3c75cd67
   thunderid_flutter: a00559a42ae6cffc1fd84d506b9423309f70de14
 
-PODFILE CHECKSUM: 70db81c419f44557a5e2c73ed48b19e8004c265f
+PODFILE CHECKSUM: 3b4dfbc9a730322a5398869eda4685aab1366435
 
 COCOAPODS: 1.16.2

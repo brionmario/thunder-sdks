@@ -5,7 +5,7 @@ let package = Package(
     name: "ThunderIOSB2C",
     platforms: [.iOS(.v16)],
     dependencies: [
-        .package(path: "../../../tools/sdks/swiftui"),
+        .package(path: "../../../tools/sdks/thunderid-swiftui"),
     ],
     targets: [
         .executableTarget(

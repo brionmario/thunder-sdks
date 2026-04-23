@@ -19,4 +19,4 @@ Open in Xcode via `Package.swift` and run on an iOS 16+ simulator or device.
 
 ## SDK used
 
-`ThunderSwiftUI` at `tools/sdks/swiftui/` — depends on the `Thunder` iOS Platform SDK at `tools/sdks/ios/`.
+`ThunderSwiftUI` at `tools/sdks/thunderid-swiftui/` — depends on the `Thunder` iOS Platform SDK at `tools/sdks/thunderid-ios/`.

@@ -10,7 +10,7 @@ dependencies:
   flutter:
     sdk: flutter
   thunderid_flutter:
-    path: ../../../tools/sdks/flutter
+    path: ../../../tools/sdks/thunderid-flutter
   flutter_dotenv: ^5.1.0
 
 dev_dependencies:
