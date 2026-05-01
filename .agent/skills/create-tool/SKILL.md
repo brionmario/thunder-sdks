@@ -11,7 +11,7 @@ You are helping implement a new ThunderID SDK or integration package.
 **Before doing anything else, read the full specification:**
 
 ```
-https://github.com/brionmario/thunder-sdks/blob/21c1b94/docs/content/community/contributing/contributing-code/tooling-development/sdk-specification/README.md
+https://github.com/brionmario/thunder-sdks/blob/main/docs/content/community/contributing/contributing-code/tooling-development/sdk-specification/README.md
 ```
 
 The spec is the authoritative source for all requirements. Everything in this skill is a process guide that points you to spec sections — when there is any ambiguity, the spec wins.
