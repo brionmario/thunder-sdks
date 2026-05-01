@@ -1,5 +1,5 @@
 ---
-name: create-tool
+name: create-thunder-tool
 description: Scaffold and implement a new ThunderID SDK or integration package. Use when adding support for a new language, framework, or platform (e.g. Angular SDK, Go SDK, Auth.js integration), or when setting up the CI, sample app, and docs stubs for an existing SDK entry.
 allowed-tools: Bash(*) Read(*) Edit(*) Write(*)
 ---
