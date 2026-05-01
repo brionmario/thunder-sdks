@@ -16,6 +16,7 @@
    - 2.4 [Worked Example — JavaScript Ecosystem](#24-worked-example--javascript-ecosystem)
    - 2.5 [Applying the Pattern to Other Ecosystems](#25-applying-the-pattern-to-other-ecosystems)
    - 2.6 [Layer Rules](#26-layer-rules)
+   - 2.7 [Integration Packages](#27-integration-packages)
 3. [Guiding Principles](#3-guiding-principles)
 4. [Operational Modes](#4-operational-modes)
 5. [SDK Initialization & Configuration](#5-sdk-initialization--configuration)
@@ -46,6 +47,7 @@
 13. [Extensibility & Customization](#13-extensibility--customization)
 14. [Compliance & Standards](#14-compliance--standards)
 15. [SDK Layout](#15-sdk-layout)
+    - 15.5 [Integration List](#155-integration-list)
 16. [Documentation Requirements](#16-documentation-requirements)
 17. [Sample Applications](#17-sample-applications)
 18. [Glossary](#18-glossary)
@@ -86,7 +88,7 @@ This layering ensures:
 
 | Layer | Responsibility | Has UI | Example |
 |-------|---------------|--------|---------|
-| **Agnostic SDK** | Language-specific implementation of the full `IAMClient` interface and all protocol logic. No platform, browser, or framework dependencies. | No | JavaScript SDK, Swift SDK, Python SDK |
+| **Agnostic SDK** | Language-specific implementation of the full `ThunderIDClient` interface and all protocol logic. No platform, browser, or framework dependencies. | No | JavaScript SDK, Swift SDK, Python SDK |
 | **Platform SDK** | Extends the Agnostic SDK with platform-specific capabilities: native storage, redirect/callback handling, platform crypto, and platform-native session management. | No | Browser SDK, Node.js SDK, iOS SDK, Android SDK |
 | **Core Lib SDK** | Extends the Platform SDK with a framework's reactive primitives (state, lifecycle, context). Provides the single developer-facing entry point. UI components are optional at this layer. | Optional | React SDK, Vue SDK |
 | **Framework Specific SDK** | Thin integration layer for opinionated full-stack or meta-frameworks. Adds SSR support, file-based routing conventions, and framework-specific initialisation helpers. Builds on a Core Lib SDK. | Optional | Next.js SDK, Nuxt SDK, Angular SDK |
@@ -97,7 +99,7 @@ This layering ensures:
 
 ```mermaid
 graph TD
-    A["<b>Agnostic SDK</b><br/>IAMClient interface · Protocol logic<br/>JWT handling · Error model<br/>No platform or framework deps"]
+    A["<b>Agnostic SDK</b><br/>ThunderIDClient interface · Protocol logic<br/>JWT handling · Error model<br/>No platform or framework deps"]
 
     B["<b>Platform SDK</b><br/>Native storage · Crypto<br/>Redirect &amp; callback handling<br/>Platform session management"]
 
@@ -123,7 +125,7 @@ The JavaScript ecosystem demonstrates all four layers concretely. The same patte
 
 ```mermaid
 graph TD
-    JS["<b>JavaScript SDK</b> — Agnostic<br/>Full IAMClient · OAuth2/OIDC protocol<br/>JWT decode &amp; validation<br/>No browser APIs · No framework deps"]
+    JS["<b>JavaScript SDK</b> — Agnostic<br/>Full ThunderIDClient · OAuth2/OIDC protocol<br/>JWT decode &amp; validation<br/>No browser APIs · No framework deps"]
 
     BR["<b>Browser SDK</b> — Platform<br/>Web Crypto API · PKCE<br/>Web Worker token isolation<br/>Redirect &amp; callback handling"]
 
@@ -167,13 +169,17 @@ The same four-layer model applies to every supported ecosystem. Implementors MUS
 
 | Ecosystem | Agnostic | Platform | Core Lib | Framework Specific |
 | --------- | -------- | -------- | -------- | ------------------ |
-| **JavaScript** | JavaScript SDK | Browser SDK, Node.js SDK | React SDK, Vue SDK | Express SDK, Next.js SDK, Nuxt SDK, React Router SDK, TanStack Router SDK |
+| **JavaScript** | JavaScript SDK | Browser SDK, Node.js SDK | React SDK, Vue SDK | Angular SDK, Express SDK, Next.js SDK, Nuxt SDK, React Router SDK, TanStack Router SDK |
 | **Mobile — Apple** | Swift SDK | iOS SDK | SwiftUI SDK | — |
 | **Mobile — Android** | Kotlin SDK | Android SDK | Jetpack Compose SDK | — |
-| **Cross-platform Mobile** | — | iOS SDK + Android SDK *(via platform channels)* | Flutter SDK (Dart) | — |
+| **Cross-platform Mobile (Dart)** | — | iOS SDK + Android SDK *(via platform channels)* | Flutter SDK (Dart) | — |
+| **Cross-platform Mobile (JS)** | JavaScript SDK | iOS SDK + Android SDK *(via native modules)* | React Native SDK | — |
 | **Python** | Python SDK | — *(server-side, no platform layer needed)* | Django / FastAPI SDK | — |
+| **Go** | Go SDK | — *(server-side, no platform layer needed)* | — | — |
 
 > **Flutter note:** Flutter does not have an Agnostic layer of its own. The Flutter SDK sits at the Core Lib layer and delegates all protocol operations to the iOS and Android Platform SDKs via platform channels. Flutter UI widgets are written in Dart on top of the bridged responses.
+>
+> **React Native note:** React Native follows the same cross-platform bridge pattern as Flutter. The React Native SDK sits at the Core Lib layer, uses the JavaScript SDK for protocol logic, and delegates platform-specific operations (secure storage, biometrics, redirect handling) to the iOS and Android Platform SDKs via native modules.
 
 ---
 
@@ -188,7 +194,36 @@ The following rules MUST be observed by all SDK implementors:
 - A breaking change in any layer requires a **major version bump** in that layer and all layers that depend on it
 - All SDK layers MUST document which version of this specification they implement
 
+---
 
+### 2.7 Integration Packages
+
+Integration packages are distinct from SDKs. An **integration** adapts ThunderID authentication into an existing third-party auth framework or ecosystem tool that has its own auth abstraction layer. Integrations are not full ThunderIDClient implementations — they are thin adapters that delegate protocol operations to a ThunderID SDK.
+
+**How integrations differ from SDKs:**
+
+| Concern | SDK | Integration |
+| ------- | --- | ----------- |
+| Implements `ThunderIDClient` | Yes | No |
+| Has a layer in the four-layer hierarchy | Yes | No — sits outside the hierarchy |
+| Depends on | Its parent SDK layer | A ThunderID Platform or Core Lib SDK |
+| Implements | ThunderID protocol logic | The target framework's provider/strategy/plugin interface |
+| Lives under | `tools/sdks/` | `tools/integrations/` |
+| Release tag | `sdk/<name>/v*` | `integration/<name>/v*` |
+
+**When to build an integration instead of an SDK:**
+
+Build an integration when the target ecosystem already has a well-established auth abstraction (e.g., Auth.js providers, Passport strategies, Backstage auth plugins) and developers expect to use ThunderID through that abstraction rather than the ThunderID SDK API directly.
+
+**Integration contract:**
+
+An integration MUST:
+
+- Declare a versioned dependency on the ThunderID SDK it consumes (Platform or Core Lib layer)
+- Implement the target framework's auth interface fully and correctly
+- Not re-implement any OAuth2/OIDC logic — delegate all protocol operations to the ThunderID SDK
+- Follow the target framework's own conventions for error handling, session management, and configuration
+- Document which ThunderID SDK version and which target framework version it supports
 
 ---
 
@@ -593,10 +628,10 @@ This section defines how SDKs for UI frameworks (React, Angular, Vue, SwiftUI, e
 
 ### 7.1 Client Interface
 
-All SDK implementations MUST provide a client interface that exposes a consistent set of core operations. The pseudocode below defines the canonical `IAMClient` interface that all platform clients MUST implement or map to:
+All SDK implementations MUST provide a client interface that exposes a consistent set of core operations. The pseudocode below defines the canonical `ThunderIDClient` interface that all platform clients MUST implement or map to:
 
 ```
-interface IAMClient<TConfig> {
+interface ThunderIDClient<TConfig> {
 
   // ── Lifecycle ─────────────────────────────────────────────────────────────
 
@@ -1337,7 +1372,7 @@ The SDK MUST expose an event system for application-level observability:
 
 ```
 // Subscribe to SDK lifecycle events
-IAMClient.on(event: SDKEvent, handler: (EventPayload) -> Void)
+ThunderIDClient.on(event: SDKEvent, handler: (EventPayload) -> Void)
 
 SDKEvent enum {
   SIGN_IN_SUCCESS
@@ -1378,11 +1413,14 @@ This section defines how to organize SDKs within the ThunderID monorepo (`asgard
 
 ### 15.0 Directory Structure
 
-Every SDK occupies a named subdirectory under `tools/sdks/`. The directory is the SDK package root itself — it contains the publishable source, tests, and build configuration directly (no `code/` subdirectory):
+Every SDK occupies a named subdirectory under `tools/sdks/`. Integration packages live separately under `tools/integrations/`. Both directories use the same flat layout — the directory is the publishable package root with no `code/` subdirectory:
 
 ```text
 tools/sdks/
-└── <sdk-name>/     # SDK library source — the publishable package (flat layout)
+└── <sdk-name>/          # SDK library source — the publishable package (flat layout)
+
+tools/integrations/
+└── <integration-name>/  # Integration package source — the publishable package (flat layout)
 ```
 
 Sample applications live separately under `samples/apps/` (see [Section 17](#17-sample-applications)).
@@ -1393,25 +1431,33 @@ Sample applications live separately under `samples/apps/` (see [Section 17](#17-
 
 All SDKs live under `tools/sdks/` in the `asgardeo/thunder` monorepo.
 
-| SDK | Layer | Location |
-| --- | ----- | -------- |
-| `javascript` | Agnostic | [`tools/sdks/javascript`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/javascript) |
-| `browser` | Platform | [`tools/sdks/browser`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/browser) |
-| `node` | Platform | [`tools/sdks/node`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/node) |
-| `react` | Core Lib | [`tools/sdks/react`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/react) |
-| `vue` | Core Lib | [`tools/sdks/vue`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/vue) |
-| `express` | Framework Specific | [`tools/sdks/express`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/express) |
-| `nextjs` | Framework Specific | [`tools/sdks/nextjs`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/nextjs) |
-| `nuxt` | Framework Specific | [`tools/sdks/nuxt`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/nuxt) |
-| `react-router` | Framework Specific | [`tools/sdks/react-router`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/react-router) |
-| `tanstack-router` | Framework Specific | [`tools/sdks/tanstack-router`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/tanstack-router) |
-| `ios` | Platform | [`tools/sdks/ios`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/ios) |
-| `swiftui` | Core Lib | [`tools/sdks/swiftui`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/swiftui) |
-| `android` | Platform | [`tools/sdks/android`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/android) |
-| `compose` | Core Lib | [`tools/sdks/compose`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/compose) |
-| `flutter` | Core Lib | [`tools/sdks/flutter`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/flutter) |
+| SDK | Ecosystem | Layer | Location |
+| --- | --------- | ----- | -------- |
+| `javascript` | JavaScript | Agnostic | [`tools/sdks/javascript`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/javascript) |
+| `browser` | JavaScript | Platform | [`tools/sdks/browser`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/browser) |
+| `node` | JavaScript | Platform | [`tools/sdks/node`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/node) |
+| `react` | JavaScript | Core Lib | [`tools/sdks/react`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/react) |
+| `vue` | JavaScript | Core Lib | [`tools/sdks/vue`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/vue) |
+| `angular` | JavaScript | Framework Specific | [`tools/sdks/angular`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/angular) |
+| `express` | JavaScript | Framework Specific | [`tools/sdks/express`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/express) |
+| `nextjs` | JavaScript | Framework Specific | [`tools/sdks/nextjs`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/nextjs) |
+| `nuxt` | JavaScript | Framework Specific | [`tools/sdks/nuxt`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/nuxt) |
+| `react-router` | JavaScript | Framework Specific | [`tools/sdks/react-router`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/react-router) |
+| `tanstack-router` | JavaScript | Framework Specific | [`tools/sdks/tanstack-router`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/tanstack-router) |
+| `react-native` | JavaScript | Core Lib | [`tools/sdks/react-native`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/react-native) |
+| `ios` | Swift | Platform | [`tools/sdks/ios`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/ios) |
+| `swiftui` | Swift | Core Lib | [`tools/sdks/swiftui`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/swiftui) |
+| `android` | Kotlin | Platform | [`tools/sdks/android`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/android) |
+| `compose` | Kotlin | Core Lib | [`tools/sdks/compose`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/compose) |
+| `flutter` | Dart | Core Lib | [`tools/sdks/flutter`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/flutter) |
+| `python` | Python | Agnostic | [`tools/sdks/python`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/python) |
+| `go` | Go | Agnostic | [`tools/sdks/go`](https://github.com/asgardeo/thunder/tree/main/tools/sdks/go) |
 
 > **Router SDKs:** `react-router` and `tanstack-router` sit at the Framework Specific layer. They build on top of the React Core Lib SDK and add router-specific concerns such as protected routes, callback route handling, and navigation guards.
+>
+> **Angular SDK:** Angular's strong dependency injection model means it integrates most naturally as a Framework Specific SDK directly on the Browser SDK, rather than on an intermediate Core Lib SDK (see §2.4).
+>
+> **React Native SDK:** Sits at the Core Lib layer. Uses the JavaScript SDK for protocol logic and delegates platform-specific operations to the iOS and Android Platform SDKs via native modules (see §2.5).
 
 **Rules:**
 
@@ -1434,6 +1480,8 @@ Ecosystem-specific package naming rules take precedence over a unified cross-lan
 | Android (Kotlin)        | `io.thunderid.*`                 | Java/Kotlin libraries follow reverse-domain naming (e.g., `io.thunderid.android`).                                         |
 | Compose (Kotlin)        | `io.thunderid.compose`           | Separate Gradle library from the Android Platform SDK. UI components only; depends on `io.thunderid:android`.              |
 | Flutter (Dart)          | `thunderid_flutter`              | Dart packages use `snake_case` with underscores separating words.                                                        |
+| React Native (JS/TS)    | `@thunderid/react-native`        | Same npm scope as other JS packages. Follows React Native community naming conventions.                                  |
+| Angular (JS/TS)         | `@thunderid/angular`             | Same npm scope as other JS packages.                                                                                     |
 | Python                  | `thunderid`                      | Python packages are typically lowercase with optional underscores if needed.                                             |
 | Go                      | `github.com/asgardeo/thunderid`  | Go modules follow repository import paths rather than separate package registries.                                       |
 
@@ -1517,6 +1565,29 @@ The workflow MUST:
 
 ---
 
+### 15.5 Integration List
+
+All integration packages live under `tools/integrations/` in the `asgardeo/thunder` monorepo. See [Section 2.7](#27-integration-packages) for how integrations differ from SDKs.
+
+| Integration | Target Framework | Consumes SDK | Location |
+| ----------- | ---------------- | ------------ | -------- |
+| `authjs` | [Auth.js](https://authjs.dev) (Next-Auth v5+) | Node.js SDK | [`tools/integrations/authjs`](https://github.com/asgardeo/thunder/tree/main/tools/integrations/authjs) |
+| `nuxtauth` | [NuxtAuth](https://sidebase.io/nuxt-auth) | Node.js SDK | [`tools/integrations/nuxtauth`](https://github.com/asgardeo/thunder/tree/main/tools/integrations/nuxtauth) |
+| `passport` | [Passport.js](https://www.passportjs.org) | Node.js SDK | [`tools/integrations/passport`](https://github.com/asgardeo/thunder/tree/main/tools/integrations/passport) |
+| `backstage` | [Backstage](https://backstage.io) | Node.js SDK | [`tools/integrations/backstage`](https://github.com/asgardeo/thunder/tree/main/tools/integrations/backstage) |
+
+**Naming convention:**
+
+| Ecosystem | Package name | Example |
+| --------- | ------------ | ------- |
+| JavaScript / TypeScript | `@thunderid/integration-<name>` | `@thunderid/integration-authjs` |
+
+**Release tag convention:** `integration/<name>/v<semver>` — for example, `integration/authjs/v0.1.0`.
+
+**CI/CD:** Each integration follows the same composite action pattern as SDKs (§15.4). The composite action lives at `.github/actions/<integration-name>-integration/action.yml` and is called from both the PR builder and the release workflow.
+
+---
+
 ## 16. Documentation Requirements
 
 Every SDK release MUST be accompanied by documentation published to the ThunderID docs site. Documentation is not optional — an SDK without docs MUST NOT be considered shippable.
@@ -1552,6 +1623,11 @@ Each SDK MUST have a quickstart guide that takes a developer from zero to a work
 - Be published to the ThunderID docs site under a consistent URL pattern:
   - `https://thunderidentity.org/docs/quick-starts/<sdk-name>/`
 
+**Reference examples:**
+
+- Web (React): [React Quickstart](https://brionmario.github.io/thunder-sdks/docs/next/guides/quick-start/connect-your-application/react)
+- Mobile (Flutter): [Flutter Quickstart](https://brionmario.github.io/thunder-sdks/docs/next/guides/quick-start/connect-your-application/flutter)
+
 Nav entry pattern (added to the sidebar under `Get started > Connect App`):
 
 ```yaml
@@ -1571,7 +1647,7 @@ API reference pages are authored under `docs/content/sdks/<sdk-name>/` in `asgar
 ```text
 docs/content/sdks/<sdk-name>/
 ├── overview.md
-├── client.md           # IAMClient — all methods and properties
+├── client.md           # ThunderIDClient — all methods and properties
 ├── configuration.md    # Config fields
 ├── models.md           # Public types (User, Organization, TokenResponse, etc.)
 └── guides/
@@ -1593,6 +1669,11 @@ Nav entry pattern (added to the sidebar under `SDK Documentation`):
 ```
 
 Published SDK references are indexed at the ThunderID docs site under `sdks/`.
+
+**Reference examples:**
+
+- Web (React): [React SDK Reference](https://brionmario.github.io/thunder-sdks/docs/next/sdks/react/overview)
+- Mobile (Flutter): [Flutter SDK Reference](https://brionmario.github.io/thunder-sdks/docs/next/sdks/flutter/overview)
 
 ---
 
@@ -1719,7 +1800,7 @@ For server-side SDKs (Express, Node.js, Django, FastAPI), replace steps 1–6 wi
 | **clockTolerance** | The allowed clock skew (in seconds) when validating the `exp` and `iat` claims of an ID token |
 | **instanceId** | An optional integer that enables multiple independent authentication contexts within a single application instance |
 | **Preferences** | An optional config block for UI customization (theme, i18n) available in SDKs that ship bundled UI components |
-| **IAMClient** | The canonical client interface all SDK implementations must fulfill, defining all core authentication, session, token, profile, and organization operations |
+| **ThunderIDClient** | The canonical client interface all SDK implementations must fulfill, defining all core authentication, session, token, profile, and organization operations |
 | **EmbeddedFlow** | The app-native, API-driven authentication flow; referred to as "embedded" in the client interface to distinguish it from redirect-based flows |
 | **signIn** | The standard public API term for initiating authentication. Never `login`. |
 | **signOut** | The standard public API term for terminating a session. Never `logout`. |
@@ -1732,7 +1813,7 @@ For server-side SDKs (Express, Node.js, Django, FastAPI), replace steps 1–6 wi
 | **Callback component** | A component rendered at the OAuth2 redirect callback URL that handles code exchange and post-sign-in redirection |
 | **OrganizationSwitcher** | A UI component that lists accessible organizations and triggers `switchOrganization()` when a user selects one |
 | **Core SDK** | The language-agnostic specification layer that all platform SDKs implement against; contains no runtime code |
-| **JavaScript SDK** | The JS/TS runtime implementation of `IAMClient`; contains all OAuth2/OIDC protocol logic; has no browser or framework dependencies |
+| **JavaScript SDK** | The JS/TS runtime implementation of `ThunderIDClient`; contains all OAuth2/OIDC protocol logic; has no browser or framework dependencies |
 | **Browser SDK** | Extends the JavaScript SDK with browser-specific APIs (Web Crypto, Web Worker, redirect handling); the base for all web framework SDKs |
 | **Platform Channel** | A Flutter mechanism for calling native iOS (Swift) or Android (Kotlin) code from Dart; used by the Flutter SDK to delegate protocol operations to the native SDKs |
 | **Layer** | A single SDK in the dependency tree; each layer builds on exactly one parent and MUST NOT skip levels |

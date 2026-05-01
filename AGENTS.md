@@ -39,6 +39,7 @@ Clone the SDK repository only if you are developing or debugging the SDK itself,
 ## Agent Skills
 
 - [Thunder Console Navigator](.agent/skills/thunder-console/SKILL.md) — Browse and interact with the Thunder Console UI using `playwright-cli`. Use when asked to navigate the console, test UI changes, or create/edit resources through the browser.
+- [Create Tool](.agent/skills/create-tool/SKILL.md) — Scaffold and implement a new ThunderID SDK or integration package. Use when adding support for a new language, framework, or platform (e.g. Angular SDK, Go SDK, Auth.js integration), or when setting up the CI, sample app, and docs stubs for an existing SDK entry.
 
 ## Contributing Guidelines
 
