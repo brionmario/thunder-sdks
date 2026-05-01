@@ -66,7 +66,7 @@ class BaseSignUp extends StatefulWidget {
 
 class _BaseSignUpState extends State<BaseSignUp> {
   EmbeddedFlowResponse? _currentStep;
-  bool _isLoading = false;
+  bool _isLoading = true;
   String? _error;
 
   @override
@@ -80,6 +80,7 @@ class _BaseSignUpState extends State<BaseSignUp> {
     try {
       final state = ThunderIDProvider.of(context);
       final response = await state.client.signUp(
+        payload: EmbeddedSignInPayload(actionId: 'init'),
         request: EmbeddedFlowRequestConfig(
           applicationId: widget.applicationId,
           flowType: FlowType.registration,
